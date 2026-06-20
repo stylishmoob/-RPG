@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>人生RPG</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+    <div><h1>ステータス</h1>
+        <div>STR : {{front_status[0] | round(1)}}</div>
+        <div>INT : {{front_status[1] | round(1)}}</div>
+        <div>SKL : {{front_status[2] | round(1)}}</div>
+        <div>CRE : {{front_status[3] | round(1)}}</div>
+        <div>WIL : {{front_status[4] | round(1)}}</div>
+    </div>
+
+    <div id="stopwatch"><h2>ストップウォッチ</h2>
+        <div>
+            <h3 id="timer">00:00:00</h3>
+            <form method="POST" action="{{url_for('save_action')}}">
+                <input type="hidden" name="action" value="save_seconds">
+                <input type="hidden" name="start_time" id="start_time">
+                <input type="hidden" name="end_time" id="end_time">
+                <input type="hidden" name="duration_seconds" id="duration_seconds" value="0">
+                <button id="stopbutton" type="submit" onclick="stoptimer()">stop</button>
+                <button id="startbutton" type="button" onclick="starttimer()">start</button>
+
+                <select name="category_id" required>
+                {% for category_name in categories %}
+                    <option value="{{category_name[0]}}">{{category_name[1]}}</option>
+                {% endfor %}
+                </select>
+            </form >
+
+
+        </div>
+
+    </div>
+    <div><h4>今日の活動</h4>
+        <table>
+            <tr>
+                <th>開始時刻</th>
+                <th>カテゴリー名</th>
+                <th>時間</th>
+            </tr>
+            {% for log in today_logs %}
+            <tr>
+                <td>{{log[2]}}</td>
+                <td>{{log[1]}}</td>
+                <td>{{log[4]}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
+
+    <a href="{{url_for('category')}}">カテゴリー設定</a>
+    <a href="{{url_for('history')}}">活動履歴</a>
+
+<script>
+let time=0;
+let timer_id=null;
+let running=false;
+let elapsedseconds=0;
+let starttime=0;
+let endtime=0;
+let stopButton=document.getElementById("stopbutton");
+let startButton=document.getElementById("startbutton");
+let stopWatch=document.getElementById("stopwatch");
+
+function stoptimer(){
+    if(running==true){
+        running=false;
+    clearInterval(timer_id);
+    }
+    endtime=Date.now()
+    document.getElementById("end_time").value=new Date(endtime).toISOString();
+    document.getElementById("duration_seconds").value=elapsedseconds;
+    
+}
+
+function starttimer(){
+    if(running==false){
+        running=true
+        starttime=Date.now()
+        document.getElementById("start_time").value=new Date(starttime).toISOString();
+        timer_id=setInterval(() => {
+            elapsedseconds=Math.floor((Date.now() - starttime)/1000)
+            //変数をループの中で作り直しているだけ書き換えていないためconst可
+            const h=String(Math.floor(elapsedseconds/3600)).padStart(2,"0");
+            const m=String(Math.floor((elapsedseconds % 3600)/60)).padStart(2,"0");
+            const s=String(elapsedseconds %60).padStart(2,"0");
+            document.getElementById("timer").textContent= `${h}:${m}:${s}`;
+        },1000);
+    }
+}
+</script>
+</body>
+</html>

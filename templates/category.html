@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>カテゴリー管理</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+    <div><h1>カテゴリー管理</h1>
+
+        <h2>カテゴリー一覧</h2>
+        <table>
+            <tr>
+                <th>番号</th>
+                <th>カテゴリー名</th>
+            </tr>
+            {% for category_name in categories %}
+            <tr>
+                <td>{{category_name[0]}}</td>
+                <td>{{category_name[1]}}</td>
+                <td>
+                    <form method="POST">
+                        <input type="hidden" name="action" value="edit_category_name">
+                        <input type="hidden" name="category_id" value="{{category_name[0]}}">
+                        <input type="text" name="new_name" value="{{category_name[1]}}" required>
+                        <button type="submit">変更</button>
+                    </form>
+                </td>
+                <td>
+                    <form method="POST">
+                        <input type="hidden" name="action" value="delete_category_name">
+                        <input type="hidden" name="category_id" value="{{category_name[0]}}">
+                        <button type="submit">削除</button>
+                    </form>
+                </td>                 
+            </tr>
+            {% endfor %}
+        </table>
+
+        <h3>カテゴリー追加</h3>
+        <form method="POST">
+            <input type="hidden" name="action" value="add_category_name">
+            <input type="text" name="category_name" placeholder="カテゴリー名" required>
+            <button type="submit">追加</button>
+        </form>
+
+        <p><a href="{{url_for('home')}}">ホームへ戻る</a></p>
+    </div>
+
+
