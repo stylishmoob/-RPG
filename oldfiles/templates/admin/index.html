@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>管理画面</title>
+</head>
+<body>
+    <h2>管理画面</h2>
+
+    <ul>
+        <li><a href="{{ url_for('admin_master_categories') }}">カテゴリー管理</a></li>
+        <li><a href="{{ url_for('admin_statuses') }}">ステータス管理</a></li>
+        <li><a href="{{ url_for('admin_status_rules') }}">ステータス上昇ルール管理</a></li>
+        <li><a href="{{ url_for('admin_jobs') }}">職業管理</a></li>
+        <li><a href="{{ url_for('admin_achievements') }}">実績管理</a></li>
+    </ul>
+
+    <a href="{{ url_for('home') }}">ホームへ戻る</a>
+
+</body>

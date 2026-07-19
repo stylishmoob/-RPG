@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ログイン画面</title>
+
+</head>
+<body>
+    <h1>ログイン</h1>
+    <form method="POST">
+        <select name="user_id">
+        {% for user in users %}
+         <option value="{{user[0]}}">
+            {{user[1]}}
+         </option>
+        {% endfor %}
+         </select>
+
+         <button type="submit">ログイン</button>
+    </form>
+    <a href="{{url_for('register')}}">新規登録</a>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ステータス</title> 
+    <link rel="stylesheet" href="{{url_for('static', filename='status.css')}}">
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@200..900&display=swap" rel="stylesheet">
+
+
+</head>
+<body>
+<div class="main">
+    <div class="main-inner">
+        <h1>ステータス</h1>
+        <div class="tab-menu">
+            <button class="tab-button active" data-tab="profile-box">
+                <h2>プロフィール</h2>
+            </button>
+
+            <button class="tab-button" data-tab="status-box">
+                <h2>ステータス</h2>
+            </button>
+
+            <button class="tab-button" data-tab="achievement-box">
+                <h2>勲章・称号</h2>
+            </button>
+
+            <div class="home">
+                <div class="home-inner">
+                    <a href="{{url_for('home')}}">ホームへ</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content active" id="profile-box">
+            <div class="profile-box">
+                <div class="card-inner">
+                    <div class="profile-main">
+                        <div class="player-image"> 
+                            <!-- <img src="player.png"> -->
+                        </div>
+                        <div id="user_name" class="user-name">
+                            <div class="NAME">NAME</div> 
+                            <div class="NAME-value">{{user[1]}}</div> 
+                        </div>
+                        <div id="job_name" class="job-name">
+                            <div class="CLASS">CLASS</div>
+                            <div class="CLASS-value">{% if user_job %}{{user_job[1]}}{% else %}なし{% endif %}</div>
+                        </div>
+                    </div>
+                
+                    <div class="lv-exp-card">
+                        <div id="user_level" class="user-level">
+                            <div class=LEVEL>Lv.<span class="LEVEL-value">{{user[2] | int}}</span>
+                            </div>  
+                        </div>  
+                        <div id="level-up" class="level-up">LEVEL UP!!</div>   
+        
+                        <div class="exp-text">
+                            EXP <span id="current-exp">{{current_exp}}</span>/<span id="next-exp">{{next_exp}}</span>    
+                        </div>
+                        <div class="exp-bar">
+                            <div class="exp-fill"
+                                id="exp-fill" 
+                                data-width="{{ exp_percent }}" 
+                                style="width: {{ exp_percent }}%;">
+                            </div>
+                        </div>     
+                    </div>
+
+                    <div >
+                        <div id="status-hp" class="status-hp">
+                            <span class="status-name">{{user_hp[2]}}</span>
+                            <div class="hp-bar">
+                                <div class="hp-fill"></div>
+                            </div>
+                                <span id="hp-value" class="hp-value">{{user_hp[3] | int }}/{{user_hp[3] | int}}</span>
+                        </div>
+                        <div id="status-mp" class="status-mp">
+                            <span class="status-name">{{user_mp[2]}}</span>
+                            <div class="mp-bar">
+                                <div class="mp-fill"></div>
+                            </div>
+                            <span id="mp-value" class="mp-value">{{user_mp[3] | int}}/{{user_mp[3] | int}}</span>
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="status-box">
+            <div class="status-box">
+                <div class="card-inner">
+                    <div id="status-list" class="status-list">
+                        <div id="status-hp" class="status-hp">
+                            <span class="status-name">{{user_hp[2]}}</span>
+                            <div class="hp-bar">
+                                <div class="hp-fill"></div>
+                            </div>
+                            <span id="hp-value" class="hp-value">{{user_hp[3] | int }}/{{user_hp[3] | int}}</span>
+                        </div>
+                        <div id="status-mp" class="status-mp">
+                            <span class="status-name">{{user_mp[2]}}</span>
+                            <div class="mp-bar">
+                                <div class="mp-fill"></div>
+                            </div>
+                            <span id="mp-value" class="mp-value">{{user_mp[3] | int}}/{{user_mp[3] | int}}</span>
+                        </div>
+                
+                        {% for user_id,user_name,status_name,status_value,status_type in user_status[2:] %}
+                            {% if status_type=="front" %}
+                                {% set percent = status_value %}
+                                {% if percent > 100 %}
+                                    {% set percent = 100 %}
+                                {% endif %}
+                                <!-- value自体を百分率として扱う -->
+                                <div class="status-row">
+                                    <div class="status-name">{{status_name}}</div>
+                                    <div class="status-bar">
+                                        <div class="status-fill" style="width: {{percent}}%;"></div>
+                                    </div>
+                                    <div>
+                                        <span class="status-value">{{status_value | int}}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="achievement-box">
+            <div class="achievement-box">
+                <div class="card-inner">
+                    
+                    {% for achievement in user_achievements %}
+                        <div>
+                            <strong>{{ achievement[1] }}</strong><br>
+                            {{ achievement[2] }}
+                        </div>
+                    {% endfor %}  
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const buttons=document.querySelectorAll(".tab-button");
+const contents=document.querySelectorAll(".tab-content");
+
+buttons.forEach(button =>{
+
+    button.addEventListener("click", () =>{
+
+        buttons.forEach(btn=>{
+            btn.classList.remove("active");
+        });
+
+        button.classList.add("active");
+
+        contents.forEach(content=>{
+            content.classList.remove("active");
+        });
+
+        document
+            .getElementById(button.dataset.tab)
+            .classList.add("active");
+
+    });
+
+});
+</script>
+</body>
+</html>

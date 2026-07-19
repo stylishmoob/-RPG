@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>カテゴリー管理</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='category.css')}}">
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@200..900&display=swap" rel="stylesheet">
+
+
+</head>
+
+<body>
+    <div class="page">
+        <div class="category-main">
+            <h1>カテゴリー管理</h1>
+            <div class="category-left">
+                <div class="category-left-inner">
+                    <h2>カテゴリー一覧</h2>
+                    <div class="category-all">
+                        <div class="category-all-inner">
+                            <table>
+                                
+                                {% for id,category_name in categories %}
+                                <tr>
+                                    <td>{{category_name}}</td>
+                                    <td>
+                                        <form method="POST">
+                                            <input type="hidden" name="action" value="delete_user_category">
+                                            <input type="hidden" name="category_id" value="{{id}}">
+                                            <button type="submit" class="delete-button">削除</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                        
+            <div class="category-right">
+                <div class="category-right-inner">
+                    <h2>カテゴリー追加</h2>
+                    <div class="category-add">
+                        <div class="category-add-inner">
+                            <form method="POST" class="add-form">
+                                <input type="hidden" name="action" value="add_user_category">
+                                <select name="master_category_id">
+                                {% for master_category in master_categories %}
+                                <option value="{{master_category[0]}}">
+                                    {{master_category[1]}}
+                                </option>
+                                {% endfor %}
+                                </select>
+                                <button type="submit" class="add-button" >追加</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="home">
+                <div class="home-inner">
+                    <a href="{{url_for('home')}}">ホームへ戻る</a>
+                </div>
+            </div>
+        </div>
+    </div>
+        
+</body>
+</html>
+

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>カテゴリー管理</title>
+</head>
+<body>
+    <h2>カテゴリー管理</h2>
+
+    <form method="POST" action="{{url_for('admin_add_category')}}">
+        <input type="text" name="category_name" placeholder="カテゴリー名" required>
+        <button type="submit">追加</button>
+    </form>
+
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>カテゴリー名</th>
+        </tr>
+
+        {% for master_category_id,master_category_name,is_active in master_categories %}
+        <tr>
+            <td>{{master_category_id}}</td>
+            <td>{{master_category_name}}</td>
+            <td>
+            <form method="POST" action="{{url_for('admin_edit_category')}}" >
+                <input type="hidden" name="master_category_id"value="{{master_category_id}}">
+                <input type="text" name="new_master_category_name" placeholder="カテゴリー名" required >
+                <button type="submit">変更</button>
+            </form>
+            </td>
+            <td>
+            <form method="POST" action="{{url_for('admin_toggle_category')}}" >
+                <input type="hidden" name="master_category_id" value="{{master_category_id}}">
+                {% if is_active %}
+                <button type="submit">無効化</button>
+                {% else %}
+                <button type="submit">有効化</button>
+                {% endif %}
+            </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <a href="{{url_for('admin_index')}}">管理画面に戻る</a>
+
+</body>
+</html>

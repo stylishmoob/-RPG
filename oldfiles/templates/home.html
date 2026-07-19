@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>人生RPG</title>
+
+    <link rel="stylesheet"
+          href="{{url_for('static',filename='home.css')}}">
+
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet">     
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+Rounded+1c:wght@900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap" rel="stylesheet">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@100;300;400;500;700;800&display=swap" rel="stylesheet">
+
+
+
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="{{ url_for('static', filename='home.js') }}" defer></script>
+
+</head>
+
+<body>
+<div class="app">
+    <div class="left-column">
+        <div class="card profile-box" id="profile-box">
+            <div class="card-inner">
+                <div class="card-content">
+                    <h3>PROFILE</h3>
+                    <div class="profile-main">
+                        <div class="player-image"> 
+                            <!-- <img src="player.png"> -->
+                        </div>
+                        <div id="user_name" class="user-name">
+                            <div class="NAME">NAME</div> 
+                            <div class="NAME-value">{{user[1]}}</div> 
+                        </div>
+                        <div id="job_name" class="job-name">
+                            <div class="CLASS">CLASS</div>
+                            <div class="CLASS-value">{% if user_job %}{{user_job[1]}}{% else %}なし{% endif %}</div>
+                        </div>
+                    </div>
+                
+                    <div class="lv-exp-card">
+                        <div id="user_level" class="user-level">
+                            <div class=LEVEL>Lv.<span class="LEVEL-value">{{user[2] | int}}</span>
+                            </div>  
+                        </div>  
+                        <div id="level-up" class="level-up">LEVEL UP!!</div>   
+            
+    <!--     同期版   
+            <div class="exp-area">
+                <div class="exp-text">
+                EXP {{current_exp}}/{{next_exp}}    
+            </div>
+            <div class="exp-bar">
+                <div class="exp-fill" id="exp-fill" data-width="{{ exp_percent }}" style="width:0%;"></div>
+            </div>
+            </div> -->
+    <!-- 　　非同期版 -->
+                        
+                        <div class="exp-text">
+                            EXP <span id="current-exp">{{current_exp}}</span>/<span id="next-exp">{{next_exp}}</span>    
+                        </div>
+                        <div class="exp-bar">
+                            <div class="exp-fill"
+                                id="exp-fill" 
+                                data-width="{{ exp_percent }}" 
+                                style="width: {{ exp_percent }}%;">
+                            </div>
+                        </div>     
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card status-box" id="status-box">
+            <div class="card-inner">
+                <div class="card-content">
+                    <div id="status-list" class="status-list">
+                        <h3>STATUS</h3>
+                        <div id="status-hp" class="status-hp">
+                            <span class="status-name">{{user_hp[2]}}</span>
+                            <div class="hp-bar">
+                                <div class="hp-fill"></div>
+                            </div>
+                            <span id="hp-value" class="hp-value">{{user_hp[3] | int }}/{{user_hp[3] | int}}</span>
+                        </div>
+                        <div id="status-mp" class="status-mp">
+                            <span class="status-name">{{user_mp[2]}}</span>
+                            <div class="mp-bar">
+                                <div class="mp-fill"></div>
+                            </div>
+                            <span id="mp-value" class="mp-value">{{user_mp[3] | int}}/{{user_mp[3] | int}}</span>
+                        </div>
+                
+                        {% for user_id,user_name,status_name,status_value,status_type in user_status[2:] %}
+                            {% if status_type=="front" %}
+                                {% set percent = status_value %}
+                                {% if percent > 100 %}
+                                    {% set percent = 100 %}
+                                {% endif %}
+                                <!-- value自体を百分率として扱う -->
+                                <div class="status-row">
+                                    <div class="status-name">{{status_name}}</div>
+                                    <div class="status-bar">
+                                        <div class="status-fill" style="width: {{percent}}%;"></div>
+                                    </div>
+                                    <div>
+                                        <span class="status-value">{{status_value | int}}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="right-column">
+        <div id="stopwatch" class="card stopwatch-card">
+            <div class="card-inner">
+                <div class="card-content">
+                    <h3>STOP WATCH</h3>
+                    <h4 id="timer">00:00:00</h4>
+                    <form method="POST" id="save-form" action="{{url_for('save_action')}}" class="timer-form">
+                        <input type="hidden" name="action_type" value="save_seconds">
+                        <input type="hidden" name="start_time" id="start_time">
+                        <input type="hidden" name="end_time" id="end_time">
+                        <input type="hidden" name="duration_seconds" id="duration_seconds" value="0">
+                        <button id="timerbutton" type="button" class="btn" onclick="timerButton()"
+                        {% if not categories %}disabled{% endif %}><span>START</span></button>
+
+                        <select name="category_id" class="select-box" required>
+                        {% for category in categories %}
+                            <option value="{{category[0]}}">{{category[1]}}</option>
+                        {% endfor %}
+                        </select>
+                    </form >
+                </div>
+            </div>
+        </div>
+    
+        <div class="card today-box">
+            <div class="card-inner">
+                <div class="card-content">
+                    <h3>TODAY</h3>
+                    <table>
+                        <tr>
+                            <th>開始時刻</th>
+                            <th>カテゴリー名</th>
+                            <th>時間</th>
+                        </tr>
+                        <tbody id="today-log-list">
+                        {% for log in today_logs %}
+                        <tr>
+                            <td>{{log[2]}}</td>
+                            <td>{{log[1]}}</td>
+                            <td>{{log[4]}} 秒</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card menu-box">
+            <div class="card-inner">
+                <h3>MENU</h3>
+                <div class="menu-links">
+                    <a href="{{url_for('status')}}">ステータス詳細</a>
+                    <a href="{{url_for('category')}}">カテゴリー設定</a>
+                    <a href="{{url_for('history')}}">活動履歴</a>
+                </div>
+            </div>
+        </div>
+        
+        {% if session["is_admin"] ==1  %}
+        <div class="admin">
+            <a href="{{url_for('admin_index')}}">管理画面</a>
+        </div>
+        {% endif %}
+        <button id="open-logout-modal" class="logout-btn">ログアウト</button>
+        <div id="logout-modal" class="modal">
+            <div id="modal-content" class="modal-content">
+                <h3>ログアウトしますか？</h3>
+                <div class="modal-buttons">
+                    <form action="{{url_for('logout')}}">
+                    <button type="submit">はい</button>
+                    </form>
+                    <button id="cancel-btn">キャンセル</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="notification" class="notification"></div>     
+</div>
+
+</body>
+</html>

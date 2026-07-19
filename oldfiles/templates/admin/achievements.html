@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>勲章・称号</title>
+</head>
+<body>
+    <h2>勲章・称号 管理</h2>
+
+    <form method="POST" action="{{url_for('admin_add_achievements')}}">
+        <select name="required_category_id">
+            {% for category in master_categories %}
+            <option value="{{category[0]}}">
+                {{category[0]}} : {{category[1]}}
+            </option>
+            {% endfor %}
+        <input type="number" name="required_hours" placeholder="必要時間(h)" required>
+        <input type="text" name="achievement_name" placeholder="アチーブメント名" required>
+        <input type="text" name="title_name" placeholder="称号名" required>
+        <button type="submit">追加</button>
+    </form>
+
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>カテゴリーID</th>
+            <th>必要カテゴリー名</th>
+            <th>必要時間/h</th>
+            <th>アチーブメント</th>
+            <th>称号</th>
+        </tr>
+
+        {% for id,required_category_id,category_name,required_hours,achievement_name,title_name,is_active in master_achievements %}
+        <tr>
+            <td>{{id}}</td>
+            <td>{{required_category_id}}</td>
+            <td>{{category_name}}</td>
+            <td>{{required_hours}}</td>
+            <td>{{achievement_name}}</td>
+            <td>{{title_name}}</td>
+            <td>
+                <form method="POST" action="{{url_for('admin_toggle_achievements')}}">
+                    <input type="hidden" name="achievement_id" value="{{id}}">
+                {% if is_active %}
+                <button type="submit">無効化</button>
+                {% else %}
+                <button type="submit">有効化</button>
+                {% endif %}
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <a href="{{url_for('admin_index')}}">管理画面へ戻る</a>
+
+</body>
+</html>

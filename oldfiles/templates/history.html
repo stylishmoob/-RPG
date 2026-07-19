@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>活動履歴</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='history.css')}}">
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="card">
+        <h2>カテゴリー別活動時間</h2>
+        <canvas id="categorychart"></canvas>
+        <form method="GET">
+            <select name="ctx1_period" onchange="this.form.submit()">
+                <option value="all"{% if ctx1_period == "all" %}selected{% endif %}>全期間</option>
+                <option value="today"{% if ctx1_period == "today" %}selected{% endif %}>今日</option>
+                <option value="7days"{% if ctx1_period == "7days" %}selected{% endif %}>直近7日</option>
+                <option value="week"{% if ctx1_period == "week" %}selected{% endif %}>今週</option>
+                <option value="month"{% if ctx1_period == "month" %}selected{% endif %}>今月</option>
+                <option value="year"{% if ctx1_period == "year" %}selected{% endif %}>今年</option>
+            </select>
+
+            <select name="ctx1_unit" onchange="this.form.submit()">
+                <option value="seconds"{% if ctx1_unit == "seconds" %}selected{% endif %}>秒</option>
+                <option value="minutes"{% if ctx1_unit == "minutes" %}selected{% endif %}>分</option>
+                <option value="hours"{% if ctx1_unit == "hours" %}selected{% endif %}>時間</option>
+            </select>
+    </div>
+    <div class="card">
+        <h2>日別活動時間</h2>
+        <canvas id="dailychart"></canvas>
+        <form method="GET">
+            <select name="ctx2_period" onchange="this.form.submit()">
+                <option value="all"{% if ctx2_period == "all" %}selected{% endif %}>全期間</option>
+                <option value="today"{% if ctx2_period == "today" %}selected{% endif %}>今日</option>
+                <option value="7days"{% if ctx2_period == "7days" %}selected{% endif %}>直近7日</option>
+                <option value="week"{% if ctx2_period == "week" %}selected{% endif %}>今週</option>
+                <option value="month"{% if ctx2_period == "month" %}selected{% endif %}>今月</option>
+                <option value="year"{% if ctx2_period == "year" %}selected{% endif %}>今年</option>
+            </select>
+
+            <select name="ctx2_unit" onchange="this.form.submit()">
+                <option value="seconds"{% if ctx2_unit == "seconds" %}selected{% endif %}>秒</option>
+                <option value="minutes"{% if ctx2_unit == "minutes" %}selected{% endif %}>分</option>
+                <option value="hours"{% if ctx2_unit == "hours" %}selected{% endif %}>時間</option>
+            </select>
+        </form>
+    </div>
+    <p><a href="{{url_for('home')}}">ホームへ戻る</a></p>
+<script>
+Chart.defaults.font.family = "'DotGothic16','Noto Sans JP',sans-serif";
+Chart.defaults.color = "#30204F";
+
+const chartColors = [
+    "#7B5BC7",
+    "#6ED7C3",
+    "#F2B84B",
+    "#F06B8A",
+    "#6CA8FF",
+    "#B37BFF"
+];
+
+const commonOptions = {
+    responsive:true,
+    plugins:{
+        legend:{
+            labels:{
+                boxWidth:14,
+                boxHeight:14,
+                padding:18
+            }
+        },
+        tooltip:{
+            backgroundColor:"#30204F",
+            titleColor:"#FFE08A",
+            bodyColor:"#FFFFFF",
+            borderColor:"#F2B84B",
+            borderWidth:1,
+            padding:12
+        }
+    },
+    scales:{
+        x:{
+            grid:{
+                display:false
+            },
+            ticks:{
+                color:"#30204F"
+            }
+        },
+        y:{
+            beginAtZero:true,
+            grid:{
+                color:"rgba(123,91,199,.15)"
+            },
+            ticks:{
+                color:"#30204F"
+            }
+        }
+    }
+};
+
+/// カテゴリー別合計
+const summary = {{category_summary | tojson}};
+
+const labels = summary.map(item => item[1]);
+const seconds = summary.map(item => item[2]);
+
+const ctx1 = document.getElementById("categorychart");
+
+new Chart(ctx1,{
+    type:"bar",
+    data:{
+        labels:labels,
+        datasets:[{
+            label:"活動時間",
+            data:seconds,
+            backgroundColor:labels.map((_,i)=>chartColors[i % chartColors.length]),
+            borderColor:"#30204F",
+            borderWidth:2,
+            borderRadius:10,
+            borderSkipped:false
+        }]
+    },
+    options:commonOptions
+});
+
+/// 日別カテゴリー別
+const daily_summary = {{daily_category_summary | tojson}};
+
+const daily_labels = [...new Set(daily_summary.map(item => item[2]))];
+const daily_category = [...new Set(daily_summary.map(item => item[1]))];
+
+const ctx2 = document.getElementById("dailychart");
+
+const datasets = daily_category.map((category,index) => ({
+    label:category,
+    data:daily_labels.map(date => {
+        const row = daily_summary.find(
+            x => x[2] === date && x[1] === category
+        );
+        return row ? row[3] : 0;
+    }),
+    backgroundColor:chartColors[index % chartColors.length],
+    borderColor:"#30204F",
+    borderWidth:2,
+    borderRadius:8,
+    borderSkipped:false
+}));
+
+new Chart(ctx2,{
+    type:"bar",
+    data:{
+        labels:daily_labels,
+        datasets:datasets
+    },
+    options:{
+        ...commonOptions,
+        scales:{
+            x:{
+                stacked:true,
+                grid:{
+                    display:false
+                },
+                ticks:{
+                    color:"#30204F"
+                }
+            },
+            y:{
+                stacked:true,
+                beginAtZero:true,
+                grid:{
+                    color:"rgba(123,91,199,.15)"
+                },
+                ticks:{
+                    color:"#30204F"
+                }
+            }
+        }
+    }
+});
+</script>
+
+</body>
+</html>

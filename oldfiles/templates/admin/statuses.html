@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ステータス管理</title>
+</head>
+<body>
+    <h2>ステータス追加</h2>
+    <form method="POST" action="{{url_for('admin_add_status')}}">
+        <input type="text" name="status_name" placeholder="ステータス名" required>
+        <select name="status_type">
+            <option value="front">front
+                </option>
+            <option value="back">back
+        </option>
+        </select>
+        <button type="submit">追加</button>
+    </form>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>ステータス名</th>
+            <th>ステータスタイプ</th>
+        </tr>
+        {% for id,status_name,status_type,is_active in master_statuses %}
+        <tr>
+            <td>{{id}}</td>
+            <td>{{status_name}}</td>
+            <td>{{status_type}}</td>
+            <td>
+            <form method="POST" action="{{url_for('admin_edit_status')}}">
+                <input type="hidden" name="status_id" value="{{id}}">
+                <input type="text" name="new_status_name" placeholder="ステータス名" required>
+                <select name="status_type">
+                <option value="front">front
+                </option>
+                <option value="back">back
+                </option>
+                </select>
+                <button type="submit">変更</button>
+            </form>
+            </td>
+            <td>
+            <form method="POST" action="{{url_for('admin_toggle_status')}}">
+                <input type="hidden" name="status_id" value="{{id}}">
+                {% if is_active %}
+                    <button type="submit">無効化</button>
+                {% else %}
+                    <button type="submit">有効化</button>
+                {% endif %}
+            </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    
+
+    
+    <a href="{{url_for('admin_index')}}">管理画面へ戻る</a>
+
+</body>
+</html>
