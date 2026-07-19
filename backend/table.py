@@ -57,7 +57,8 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         category_id INTEGER NOT NULL,
         status_id INTEGER NOT NULL,
-        gain_per_hours REAL )""")
+        gain_per_hours REAL,
+        is_active INTEGER NOT NULL DEFAULT 1 )""")
     
     cur.execute("""
         CREATE TABLE IF NOT EXISTS achievements(

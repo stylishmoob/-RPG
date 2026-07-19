@@ -484,7 +484,8 @@ def api_admin_status_rules():
             "category_name":row["category_name"],
             "status_id":row["status_id"],
             "status_name":row["status_name"],
-            "gain_per_hours":row["gain_per_hours"],}
+            "gain_per_hours":row["gain_per_hours"],
+            "is_active":row["is_active"],}
             for row in status_rules
             ],
         "masterCategories":[{
@@ -495,7 +496,7 @@ def api_admin_status_rules():
         for row in master_categories
         ],
         "masterStatuses":[
-            {
+            { 
             "id":row["id"],
             "name":row["status_name"],
             "type":row["status_type"],

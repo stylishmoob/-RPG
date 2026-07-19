@@ -120,7 +120,8 @@ def get_status_up_rules():
                 master_categories.category_name,
                 statuses.status_name,
                 statuses.status_type,
-                status_up_rules.gain_per_hours 
+                status_up_rules.gain_per_hours,
+                 
         FROM status_up_rules
         JOIN master_categories
         ON status_up_rules.category_id=master_categories.id
@@ -542,7 +543,8 @@ def get_master_status_rules():
                 master_categories.category_name AS category_name,
                 status_up_rules.status_id AS status_id,
                 statuses.status_name AS status_name,
-                gain_per_hours
+                gain_per_hours,
+                status_up_rules.is_active AS is_active
         FROM status_up_rules
         JOIN master_categories
         ON master_categories.id=status_up_rules.category_id
