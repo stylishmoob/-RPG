@@ -143,3 +143,19 @@ export type AchievementsDataType = {
     mastercategories:MasterCategoriesType[];
 }
 
+export type StatusRulesType = {
+    id:string;
+    category_id:string;
+    category_name:string;
+    status_id:string;
+    status_name:string;
+    gain_per_hours:number;
+    is_active:boolean;
+}
+
+export type StatusRulesDataType = {
+    masterCategories:MasterCategoriesType[]
+    masterStatuses:StatusesType[]
+    statusRules:StatusRulesType[]
+}
+

@@ -5,7 +5,7 @@ import csv
 import io
 from werkzeug.security import check_password_hash
 from backend.queries import get_time_logs,get_user_categories,get_user_status,get_user_achievements, get_user_jobs,save_time_logs,add_user_category,delete_user_category,get_today_logs,get_category_summary,check_category_achievement,get_daily_summary,status_cir,check_user_job,get_master_categories,add_master_category,get_master_status_rules,add_status_rules,get_master_achievements,add_master_achievement,get_master_statuses,get_master_jobs_requirement,add_master_job,create_user
-from backend.queries import edit_master_category,add_master_status,edit_master_status,delete_status_rules,edit_master_achievement,toggle_master_job,get_user_master_categories,get_user_by_name,get_user_by_id,import_status_csv,import_category_csv,import_achievement_csv
+from backend.queries import edit_master_category,add_master_status,edit_master_status,edit_status_rules,edit_master_achievement,toggle_master_job,get_user_master_categories,get_user_by_name,get_user_by_id,import_status_csv,import_category_csv,import_achievement_csv,import_status_rules_csv
 from backend.decorators import user_required,admin_required
 app=Flask(__name__)
 app.secret_key ="hoge"
@@ -505,25 +505,69 @@ def api_admin_status_rules():
         for row in master_statuses
         ],
    })
-@app.route("/admin/status_rules/add",methods=["POST"])
-def admin_add_status_rules():
-    category_id=request.form["category_id"]
-    status_id=request.form["status_id"]
-    gain_per_hours=request.form["gain_per_hours"]
+@app.route("/api/admin/status_rules/add",methods=["POST"])
+@admin_required
+def api_admin_add_status_rules():
+    data=request.get_json()
+
+    category_id=data["category_id"]
+    status_id=data["status_id"]
+    gain_per_hours=data["gain_per_hours"]
 
     add_status_rules(category_id,status_id,gain_per_hours)
 
-    return redirect(url_for("admin_status_rules"))
+    return jsonify({
+        "success":True
+    })
 
-@app.route("/admin/status_rules/delete",methods=["POST"])
-def admin_delete_status_rules():
-    category_id=request.form["category_id"]
-    status_id=request.form["status_id"]
+@app.route("/api/admin/status_rules/edit",methods=["POST"])
+@admin_required
+def api_admin_edit_status_rules():
+    data=request.get_json()
 
-    delete_status_rules(category_id,status_id)
+    status_rules_id=data["id"]
+    category_id=data["category_id"]
+    status_id=data["status_id"]
+    gain_per_hours=data["gain_per_hours"]
+    status_rules_is_active=data["status_rules_is_active"]
 
-    return redirect(url_for("admin_status_rules"))
+    edit_status_rules(status_rules_id,category_id,status_id,gain_per_hours,status_rules_is_active)
 
+    return jsonify({
+        "success":True
+    })
+
+@app.route("/api/admin/status_rules/import",methods=["POST"])
+@admin_required
+def api_admin_import_status_rules():
+    csv_file=request.files.get("file")
+    
+    try:
+        result=import_status_rules_csv(csv_file)
+        
+        status_code=200 if result["success"] else 400
+
+        return jsonify(result), status_code 
+
+    except UnicodeDecodeError:
+        return jsonify({
+            "success": False,
+            "message": "文字コードを読み取れませんでした。UTF-8形式で保存してください",
+        }), 400
+
+    except csv.Error:
+        return jsonify({
+            "success": False,
+            "message": "CSVの形式が正しくありません",
+        }), 400
+
+    except Exception as error:
+        print(error)
+
+        return jsonify({
+            "success": False,
+            "message": "CSVの取り込みに失敗しました",
+        }), 500
 
 
 @app.route("/api/admin/achievements",methods=["GET"])

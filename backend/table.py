@@ -79,15 +79,20 @@ def init_db():
         )""")
     
     cur.execute("""
-        CREATE TABLE IF NOT EXISTS jobs_requirement(
+        CREATE TABLE IF NOT EXISTS master_jobs(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         job_name TEXT,
-        required_status_id_1 INTEGER,
-        required_status1_value INTEGER,
-        required_status_id_2 INTEGER,
-        required_status2_value INTEGER,
         is_active INTEGER NOT NULL DEFAULT 1,
         is_default INTEGER DEFAULT 0
+        )""")
+    
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS job_requirements(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        job_id INTEGER NOT NULL,
+        required_status_id INTEGER,
+        required_status_value INTEGER,
+        is_active INTEGER NOT NULL DEFAULT 1,
         )""")
 
     cur.execute("""
