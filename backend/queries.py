@@ -79,18 +79,21 @@ def get_user_by_id(user_id):
     cur=conn.cursor()
     
     cur.execute("""
-        SELECT id,
+        SELECT users.id AS id,
                 user_name,
                 password_hash,
+                job_name AS current_job_name,
                 user_level,
                 is_admin
         FROM users
-        WHERE id=?""",(user_id,))
+        JOIN master_jobs
+        ON users.current_job_id = master_jobs.id
+        WHERE users.id=?""",(user_id,))
     
     user=cur.fetchone()
 
     conn.close()
-    return user
+    return dict(user) if user else None
 
 def get_user_by_name(user_name):
     conn=sqlite3.connect(DB_NAME)
@@ -98,18 +101,21 @@ def get_user_by_name(user_name):
     cur=conn.cursor()
     
     cur.execute("""
-        SELECT id,
+        SELECT users.id AS id,
                 user_name,
                 password_hash,
+                job_name AS current_job_name,
                 user_level,
                 is_admin
         FROM users
-        WHERE user_name=?""",(user_name,))
+        JOIN master_jobs
+        ON master_jobs.id=users.current_job_id
+        WHERE users.user_name=?""",(user_name,))
     
     user=cur.fetchone()
 
     conn.close()
-    return user
+    return dict(user) if user else None
 
 def get_status_up_rules():
     conn=sqlite3.connect(DB_NAME)
@@ -156,22 +162,24 @@ def get_user_achievements(user_id):
 
 def get_user_jobs(user_id):
     conn=sqlite3.connect(DB_NAME)
+    conn.row_factory=sqlite3.Row
     cur=conn.cursor()
 
     cur.execute("""
-        SELECT  job_id,
-                job_name
+        SELECT  users_job.job_id AS job_id,
+                master_jobs.job_name AS job_name
         FROM users_job
-        JOIN jobs_requirement
-        ON users_job.job_id=jobs_requirement.id
+        JOIN master_jobs
+        ON users_job.job_id=jobs.id
         WHERE users_job.user_id=? 
-        AND jobs_requirement.is_active=1
-        AND users_job.is_active=1
+        AND master_jobs.is_active=1
         """,(user_id,))
     
-    user_job=cur.fetchone() 
+    user_jobs=cur.fetchone() 
+
     conn.close()
-    return user_job
+
+    return user_jobs
 
 def save_time_logs(user_id,selected_category_id,start_time,end_time,duration_seconds):
     conn=sqlite3.connect(DB_NAME)
@@ -415,59 +423,72 @@ def status_cir(category_id,duration_seconds,user_id):
 
 def check_user_job(user_id):
     conn=sqlite3.connect(DB_NAME)
+    conn.row_factory=sqlite3.Row
     cur=conn.cursor()
 
-    cur.execute("""
-        SELECT status_id,
-                status_value
-        FROM users_status
-        WHERE user_id=?
-        """,(user_id,))
-    
-    user_status=dict(cur.fetchall())
+    try:
+        cur.execute("""
+            SELECT status_id,
+                    status_value
+            FROM users_status
+            WHERE user_id=?
+            """,(user_id,))
+        
+        user_status={
+            row["status_id"]:row["status_value"]
+            for row in cur.fetchall()
+        }
 
-    cur.execute("""
-        SELECT id,
-               job_name,
-                required_status_id_1,
-                required_status1_value,
-                required_status_id_2,
-                required_status2_value
-            FROM jobs_requirement
-            WHERE is_active=1  
-        """)
-    jobs=cur.fetchall()
+        cur.execute("""
+            SELECT  
+                    job_id,
+                    required_status_id,
+                    required_status_value
+                FROM jobs_requirement
+                WHERE is_active=1  
+                ORDER BY job_id,id
+            """)
+        rows=cur.fetchall()
 
-#思いつかない
-    for job_id,job_name,stat1,value1,stat2,value2 in jobs:
+        requirements_by_job={}
 
-        ok1=user_status.get(stat1,0) >= value1
+        for row in rows:
+            job_id = row["job_id"]
 
-        if stat2 is None:
-            ok2=True
-        else:
-            ok2=user_status.get(stat2,0) >= value2
-
-        if ok1 and ok2:
-            cur.execute("""
-                    SELECT 1
-                    FROM users_job
-                    WHERE user_id=?
-                    AND job_id=?
-                        """,(user_id,job_id))
+            if job_id not in requirements_by_job:
+                requirements_by_job[job_id]=[]
             
-            already_has_job=cur.fetchone()
+            requirements_by_job[job_id].append(row)
+        
+        new_job_ids =[]
+        
+        for job_id,requirements in requirements_by_job.items():
+            ok = True
+            for req in requirements:
+                user_value=user_status.get(req["status_id"],0)
 
-            if already_has_job is None:
+                if user_value < req["required_value"]:
+                    ok = False
+                    break
+
+            if ok:
                 cur.execute("""
-                    UPDATE users_job SET is_active=0
-                    WHERE user_id=?""",(user_id,))
+                    INSERT OR IGNORE INTO user_jobs(user_id,job_id)
+                    VALUES (?,?)""",(user_id,job_id))
                 
-                cur.execute("""INSERT INTO users_job(user_id,job_id,is_active)
-                            VALUES(?,?,1)""",(user_id,job_id))
-           
-    conn.commit()
-    conn.close()
+                if cur.rowcount > 0:
+                    new_job_ids.append(job_id)
+            
+        conn.commit()
+
+        # return new_job_ids
+    
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+            conn.close()
 
 def get_master_categories():
     conn=sqlite3.connect(DB_NAME)
@@ -733,30 +754,46 @@ def toggle_master_status(status_id):
     conn.commit()
     conn.close()
 
-def get_master_jobs_requirement():
+def get_master_jobs():
     conn=sqlite3.connect(DB_NAME)
+    conn.row_factory=sqlite3.Row
     cur=conn.cursor()
 
     cur.execute("""
-        SELECT jobs_requirement.id,
-                jobs_requirement.job_name,
-                s1.status_name,
-                jobs_requirement.required_status1_value,
-                s2.status_name,
-                jobs_requirement.required_status2_value,
-                jobs_requirement.is_active,
-                jobs_requirement.is_default
-        FROM jobs_requirement
-        LEFT JOIN statuses AS s1
-            ON jobs_requirement.required_status_id_1=s1.id
-        LEFT JOIN statuses AS s2
-            ON jobs_requirement.required_status_id_2=s2.id
-             """)
+        SELECT id,
+                job_name,
+                is_active,
+                is_default
+        FROM master_jobs
+        """)
     
     master_jobs=cur.fetchall()
+
     conn.close()
 
     return master_jobs
+
+def get_job_requirements():
+    conn=sqlite3.connect(DB_NAME)
+    conn.row_factory=sqlite3.Row
+    cur=conn.cursor()
+
+    cur.execute("""
+        SELECT job_requirements.id AS id,
+                job_id, 
+                required_status_id,
+                status_name AS required_status_name,
+                required_status_value,
+                job_requirements.is_active AS is_active
+        FROM job_requirements
+        JOIN statuses
+        ON required_status_id = statuses.id
+        """)
+    
+    job_requirements=cur.fetchall()
+    conn.close()
+
+    return job_requirements
 
 def add_master_job(job_name,status_id_1,required_status1_value,status_id_2,required_status2_value):
     conn=sqlite3.connect(DB_NAME)

@@ -4,7 +4,7 @@ import os
 import csv
 import io
 from werkzeug.security import check_password_hash
-from backend.queries import get_time_logs,get_user_categories,get_user_status,get_user_achievements, get_user_jobs,save_time_logs,add_user_category,delete_user_category,get_today_logs,get_category_summary,check_category_achievement,get_daily_summary,status_cir,check_user_job,get_master_categories,add_master_category,get_master_status_rules,add_status_rules,get_master_achievements,add_master_achievement,get_master_statuses,get_master_jobs_requirement,add_master_job,create_user
+from backend.queries import get_time_logs,get_user_categories,get_user_status,get_user_achievements, get_user_jobs,save_time_logs,add_user_category,delete_user_category,get_today_logs,get_category_summary,check_category_achievement,get_daily_summary,status_cir,check_user_job,get_master_categories,add_master_category,get_master_status_rules,add_status_rules,get_master_achievements,add_master_achievement,get_master_statuses,get_master_jobs,get_job_requirements,add_master_job,create_user
 from backend.queries import edit_master_category,add_master_status,edit_master_status,edit_status_rules,edit_master_achievement,toggle_master_job,get_user_master_categories,get_user_by_name,get_user_by_id,import_status_csv,import_category_csv,import_achievement_csv,import_status_rules_csv
 from backend.decorators import user_required,admin_required
 app=Flask(__name__)
@@ -27,23 +27,22 @@ def api_home():
     today_logs=get_today_logs(user_id)
     user_status=get_user_status(user_id)
     user_achievements=get_user_achievements(user_id)
-    user_job=get_user_jobs(user_id)
+    user_jobs=get_user_jobs(user_id)
     user=get_user_by_id(user_id)
-    user_name=user["user_name"]
+    
     user_level=float(user["user_level"])
     current_exp=round((user_level-int(user["user_level"]))*100)
 
     next_exp=100
 
     exp_percent=min(current_exp/next_exp*100,100)
-
-    job_name=user_job[1]
     
     return jsonify({
     "success": True,
     "user": {
-        "id": user_id,
-        "name": user_name,
+        "id": user["id"],
+        "name": user["user_name"],
+        "job": user["current_job_name"],
         "level": int(user_level),
     },
     "exp": {
@@ -51,9 +50,12 @@ def api_home():
         "next": next_exp,
         "percent": exp_percent,
     },
-    "job": {
-        "name": job_name if user_job else None,
-    },
+    "job":[{
+        "id":row["job_id"],
+        "name":row["job_name"],
+        }
+        for row in user_jobs
+        ],
     "status":[{
         "id":row["status_id"],
         "name": row["status_name"],
@@ -115,9 +117,9 @@ def save_action():
     today_logs=get_today_logs(user_id)
     user_status=get_user_status(user_id)
     user_achievements=get_user_achievements(user_id)
-    user_job=get_user_jobs(user_id)
+    user_jobs=get_user_jobs(user_id)
     user=get_user_by_id(user_id)
-    user_name=user["user_name"]
+    
     user_level=float(user["user_level"])
     current_exp=round((user_level-int(user["user_level"]))*100)
 
@@ -125,58 +127,62 @@ def save_action():
 
     exp_percent=min(current_exp/next_exp*100,100)
 
-    job_name=user_job[1]
-
     return jsonify({
-    "success": True,
-    "user": {
-        "id": user_id,
-        "name": user_name,
-        "level": int(user_level),
-    },
-    "exp": {
-        "current": current_exp,
-        "next": next_exp,
-        "percent": exp_percent,
-    },
-    "job": {
-        "name": job_name if user_job else None,
-    },
-    "status":[{
-        "id":row["status_id"],
-        "name": row["status_name"],
-        "value": row["status_value"],
-        "type": row["status_type"],
-        }
-        for row in user_status
-        ],
+        "success": True,
+        "user": {
+            "id": user["id"],
+            "name": user["user_name"],
+            "job": user["current_job_name"],
+            "level": int(user_level),
+        },
+        "exp": {
+            "current": current_exp,
+            "next": next_exp,
+            "percent": exp_percent,
+        },
+        "job":[{
+            "id":row["job_id"],
+            "name":row["job_name"],
+            }
+            for row in user_jobs
+            ],
+        "status":[{
+            "id":row["status_id"],
+            "name": row["status_name"],
+            "value": row["status_value"],
+            "type": row["status_type"],
+            }
+            for row in user_status
+            ],
 
-    "achievements": [
-        {
-        "achievement_name":row["achievement_name"],
-        "title_name":row["title_name"],
-        }
-        for row in user_achievements
-        ],
+        "achievements": [
+            {
+            "achievement_name":row["achievement_name"],
+            "title_name":row["title_name"],
+            }
+            for row in user_achievements
+            ],
 
-    "categories": [
-        {
-        "id":row["category_id"],
-        "name":row["category_name"],  
-        }
-        for row in user_categories
-        ],
+        "categories": [
+            {
+            "id":row["category_id"],
+            "name":row["category_name"],  
+            }
+            for row in user_categories
+            ],
 
-    "today_logs":[
-        {
-        "category_id":row["category_id"],
-        "category_name":row["category_name"],
-        "start_time":row["start_time"],
-        "end_time":row["end_time"], 
-        "duration_seconds":row["duration_seconds"],
-        }
-        for row in today_logs
-        ],
+        "today_logs":[
+            {
+            "category_id":row["category_id"],
+            "category_name":row["category_name"],
+            "start_time":row["start_time"],
+            "end_time":row["end_time"], 
+            "duration_seconds":row["duration_seconds"],
+            }
+            for row in today_logs
+            ],
+
+        "is_admin": session.get("is_admin") == 1,
     })
 
    
@@ -266,11 +272,12 @@ def api_history():
 def api_status():
     user_id=get_current_user_id()
 
+    logs=get_time_logs(user_id)
     user_status=get_user_status(user_id)
     user_achievements=get_user_achievements(user_id)
-    user_job=get_user_jobs(user_id)
+    user_jobs=get_user_jobs(user_id)
     user=get_user_by_id(user_id)
-    user_name=user["user_name"]
+    
     user_level=float(user["user_level"])
     current_exp=round((user_level-int(user["user_level"]))*100)
 
@@ -278,41 +285,43 @@ def api_status():
 
     exp_percent=min(current_exp/next_exp*100,100)
 
-    job_name=user_job[1]
-    
     return jsonify({
-    "success": True,
-    "user": {
-        "id": user_id,
-        "name": user_name,
-        "level": int(user_level),
-    },
-    "exp": {
-        "current": current_exp,
-        "next": next_exp,
-        "percent": exp_percent,
-    },
-    "job": {
-        "name": job_name if user_job else None,
-    },
-    "status":[{
-        "id":row["status_id"],
-        "name": row["status_name"],
-        "value": row["status_value"],
-        "type": row["status_type"],
-        }
-        for row in user_status
-        ],
+        "success": True,
+        "user": {
+            "id": user["id"],
+            "name": user["user_name"],
+            "job": user["current_job_name"],
+            "level": int(user_level),
+        },
+        "exp": {
+            "current": current_exp,
+            "next": next_exp,
+            "percent": exp_percent,
+        },
+        "job":[{
+            "id":row["job_id"],
+            "name":row["job_name"],
+            }
+            for row in user_jobs
+            ],
+        "status":[{
+            "id":row["status_id"],
+            "name": row["status_name"],
+            "value": row["status_value"],
+            "type": row["status_type"],
+            }
+            for row in user_status
+            ],
 
-    "achievements": [
-        {
-        "achievement_name":row["achievement_name"],
-        "title_name":row["title_name"],
-        }
-        for row in user_achievements
-        ],
+        "achievements": [
+            {
+            "achievement_name":row["achievement_name"],
+            "title_name":row["title_name"],
+            }
+            for row in user_achievements
+            ],
 
-    "is_admin": session.get("is_admin") == 1,
+        "is_admin": session.get("is_admin") == 1,
 })
 
 
@@ -668,35 +677,102 @@ def api_admin_import_achievements():
             "message": "CSVの取り込みに失敗しました",
         }), 500
 
-@app.route("/admin/jobs")
-def admin_jobs():
-    if session.get("is_admin") != 1:
-        abort(403)
+@app.route("/api/admin/jobs",methods=["GET"])
+@admin_required
+def api_admin_jobs():
     master_statuses=get_master_statuses()
-    master_jobs=get_master_jobs_requirement()
+    master_jobs=get_master_jobs()
+    job_requirements=get_job_requirements()
+
+    return jsonify({
+        "success":True,
+
+        "masterJobs":[{
+            "id":row["id"],
+            "job_name":row["job_name"],
+            "is_active":row["is_active"],
+            "is_default":row["is_default"],
+         } for row in master_jobs 
+        ],
+        "jobRequirements":[{
+            "id":row["id"],
+            "job_id":row["job_id"],
+            "required_status_id":row["required_status_id"],
+            "required_status_name":row["required_status_name"],
+            "required_status_value":row["required_status_value"],
+            "is_active":row["is_active"],
+        } for row in job_requirements
+        ],
+         "masterStatuses":[
+            { 
+            "id":row["id"],
+            "name":row["status_name"],
+            "type":row["status_type"],
+            "is_active":row["is_active"]
+            }
+        for row in master_statuses
+        ],
+    })
     
-    return render_template("admin/jobs.html",master_statuses=master_statuses,master_jobs=master_jobs)
-
-@app.route("/admin/jobs/add",methods=["POST"])
-def admin_add_jobs():
+@app.route("/api/admin/jobs/add",methods=["POST"])
+@admin_required
+def api_admin_add_job():
     job_name=request.form["job_name"]
-    status_id_1=request.form["status_id_1"]
-    required_status1_value=request.form["required_status1_value"]
-    status_id_2=request.form["status_id_2"]
-    required_status2_value=request.form["required_status2_value"]
+    status_id=request.form["status_id"]
+    
+    add_master_job(job_name,status_id)
 
-    add_master_job(job_name,status_id_1,required_status1_value,status_id_2,required_status2_value)
+    return jsonify({
+        "success":True,
+    }
+    )
 
-    return redirect(url_for("admin_jobs"))
+@app.route("/api/admin/jobs/edit",methods=["POST"])
+@admin_required
+def api_admin_edit_job():
+    job_name=request.form["job_name"]
+    status_id=request.form["status_id"]
+    
+   
 
-@app.route("/admin/jobs/toggle",methods=["POST"])
-def admin_toggle_jobs():
-    job_id=request.form["job_id"]
+    edit_master_job(job_name,status_id)
 
-    toggle_master_job(job_id)
+    return jsonify({
+        "success":True,
+    }
+    )
 
-    return redirect(url_for("admin_jobs"))
+@app.route("/api/admin/jobs/import",methods=["POST"])
+@admin_required
+def api_admin_import_jobs():
+    csv_file=request.files.get("file")
+    
+    try:
+        result=import_jobs_csv(csv_file)
+        
+        status_code=200 if result["success"] else 400
 
+        return jsonify(result), status_code 
+
+    except UnicodeDecodeError:
+        return jsonify({
+            "success": False,
+            "message": "文字コードを読み取れませんでした。UTF-8形式で保存してください",
+        }), 400
+
+    except csv.Error:
+        return jsonify({
+            "success": False,
+            "message": "CSVの形式が正しくありません",
+        }), 400
+
+    except Exception as error:
+        print(error)
+
+        return jsonify({
+            "success": False,
+            "message": "CSVの取り込みに失敗しました",
+        }), 500
 
 @app.route("/api/login",methods=["POST"])
 def api_login():

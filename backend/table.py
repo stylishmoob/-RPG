@@ -23,6 +23,7 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_name TEXT UNIQUE,
         password_hash TEXT NOT NULL,
+        current_job_id ,
         user_level REAL DEFAULT 1,
         is_admin INTEGER DEFAULT 0
                 )""")
@@ -99,8 +100,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS users_job(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
-        job_id INTEGER NOT NULL,
-        is_active INTEGER,
+        job_id INTEGER NOT NULL
         UNIQUE(user_id,job_id))
         """)
     
