@@ -1,6 +1,6 @@
-import { useEffect,useState} from "react"
+import { useEffect,useState,Fragment} from "react"
 import { useNavigate } from "react-router-dom";
-import type { Requirements,JobsDataType } from "../../types/api";
+import type { Requirements,editRequirements,JobsType,JobsDataType, JobRequirementsType } from "../../types/api";
 
 function AdminJobs(){
     const[jobsData,setJobsData] = useState<JobsDataType | null>(null);
@@ -17,22 +17,21 @@ function AdminJobs(){
     ])
 
     const [editJobName,setEditJobName] = useState<string>("");
-     
-    const [editStatusId,setEditStatusId] = useState<string>("");
-
-    const [editStatusName,setEditStatusName] = useState<string>("");
-
-    const [editStatusValue,setEditStatusValue] = useState<string>("");
 
     const [editJobIsActive,setEditJobIsActive] = useState<boolean>(true);
 
+    const [editJobIsDefault,setEditJobIsDefault] = useState<boolean>(true);
+
     const[selectJobId,setSelectJobId] = useState<string>("");
 
-    const[editRequiredStatusId,setEditRequiredStatusId] = useState<string>("");
-
-    const [editRequiredStatusValue,setEditRequiredStatusValue] = useState<string>("");
-
-    const [editRequirementIsActive,setEditRequirementIsActive] = useState<boolean>(true);
+    const [editRequirements,setEditRequirements] = useState<editRequirements[]>([
+        {
+            id:"",
+            statusId:"",
+            requiredValue:"",
+            isActive:true,
+        }
+    ])
 
     const [editingId,setEditingId] = useState<string>("");
 
@@ -77,8 +76,13 @@ function AdminJobs(){
             await handleAdd();
             await fetchJobsData();
 
-            setAddStatusName("");
-            setAddStatusType("front");
+            setAddJobName("");
+            setAddRequirements([
+            {
+                statusId:"",
+                requiredValue:"",
+            }
+            ]);
         }catch(error){
             console.error(error);
         }
@@ -91,8 +95,8 @@ function AdminJobs(){
                 "Content-Type":"application/json",
             },
             body:JSON.stringify({
-                "status_name":addStatusName,
-                "status_type":addStatusType,
+                "job_name":addJobName,
+                "requirements":addRequirements,
             }),
         });
         if(!response.ok){
@@ -102,17 +106,27 @@ function AdminJobs(){
         return result;
     }
 
-    async function editStatusSubmit(){
+    async function editJobSubmit(){
         if(editingId === "") return;
         
         try{
-            await handleEdit(editingId,editStatusName,editStatusType,editStatusIsActive);
-            await fetchStatusesData();
+            await handleEdit(editingId,editJobName,editJobIsActive,editJobIsDefault,editRequirements);
+            await fetchJobsData();
 
             setEditingId("");
-            setEditStatusName("");
-            setEditStatusType("front");
-            setEditStatusIsActive(true);
+            setEditJobName("");
+            setEditJobIsActive(true);
+            setEditJobIsDefault(false);
+            setEditRequirements(
+                [
+                {
+                    id:"",
+                    statusId:"",
+                    requiredValue:"",
+                    isActive:true,
+                }
+                ]
+            );
         }catch(error){
             console.error(error);
         }
@@ -120,21 +134,23 @@ function AdminJobs(){
 
     async function handleEdit(
         editingId:string,
-        editStatusName:string,
-        editStatusType:string,
-        editStatusIsActive:boolean
+        editJobName:string,
+        editJobIsActive:boolean,
+        editJobIsDefault:boolean,
+        editRequirements:editRequirements[],
         )
         {
-        const response = await fetch("/api/admin/statuses/edit", {
+        const response = await fetch("/api/admin/jobs/edit", {
             method:"POST",
             headers:{
                 "Content-Type":"application/json",
             },
             body:JSON.stringify({
-                "status_id":editingId,
-                "status_name":editStatusName,
-                "status_type":editStatusType,
-                "status_is_active":editStatusIsActive,
+                "job_id":editingId,
+                "job_name":editJobName,
+                "is_active":editJobIsActive,
+                "is_default":editJobIsDefault,
+                "requirements":editRequirements,
         }),
     });
         if(!response.ok){
@@ -144,11 +160,21 @@ function AdminJobs(){
         return result;
     }
 
-    function startEditing(status:StatusesType){
-        setEditingId(status.id);
-        setEditStatusName(status.name);
-        setEditStatusType(status.type);
-        setEditStatusIsActive(status.isActive);
+    function startEditing(job:JobsType,jobRequirements:JobRequirementsType[]){
+        setEditingId(job.id);
+        setEditJobName(job.job_name);
+        setEditJobIsActive(job.is_active);
+        setEditJobIsDefault(job.is_default);
+
+        const targetRequirements = jobRequirements
+            .filter((req) => req.job_id=job.id)
+            .map((req) => ({
+                id:req.id,
+                statusId:req.required_status_id,
+                requiredValue:req.required_status_value,
+                isActive:req.is_active,
+            }))
+        setEditRequirements(targetRequirements);
     }
 
     
@@ -192,11 +218,12 @@ function AdminJobs(){
     return(
         <div>
             <h2>職業管理</h2>
-            <form onSubmit={addhandleSubmit}>
+            <form onSubmit={addHandleSubmit}>
                 <input 
                     type="text" 
                     value={addJobName} 
                     placeholder="職業名" 
+                    onChange={(e) =>{setAddJobName(e.target.value)}}
                     required
                 />
                 {addRequirements.map((requirement,index) => (
@@ -204,61 +231,235 @@ function AdminJobs(){
                         <select
                             value={requirement.statusId}
                             onChange={(e) => {
-                                const statusId =
-                                    e.target.value === "" ? "" : Number(e.target.value);
+                                const statusId = e.target.value 
+                                setAddRequirements((prev) =>
+                                    prev.map((item,itemIndex) =>
+                                        itemIndex === index
+                                        ? {...item,statusId}
+                                        : item
+                                    )
+                                )
+                            }}
+                            required
+                        >
+                            <option value="">ステータスを選択</option>
+                            {masterStatuses.map((status) => (
+                                <option key={status.id} value={status.id}>
+                                    {status.name}
+                                </option>
+                            ))}
+                        </select>
+                        <input
+                            type="text"
+                            value={requirement.requiredValue}
+                            placeholder="必要値"
+                            onChange={(e) => {
+                                const requiredValue = e.target.value 
 
-                                addRequirement()
-                                
-                            }}>
-                    
-                            </select>
+                                setAddRequirements((prev) =>
+                                    prev.map((item,itemIndex) =>
+                                        itemIndex === index
+                                        ? {...item,requiredValue}
+                                    :item
+                                )
+                            )
+                            }}
+                            required
+                        />
                     </div>
                 ))}
-                
-                        
-                <input type="number" name="required_status1_value" placeholder="ステータス値1" required>
-                <select name="status_id_2">
-                    {% for status in master_statuses %}
-                    <option value="{{status[0]}}">
-                        {{status[0]}}:{{status[1]}}:{{status[2]}}
-                    </option>
-                    {% endfor %}
-                <input type="number" name="required_status2_value" placeholder="ステータス値2" required>
-                <button type="submit">追加</button> 
+                <button type="button" onClick={addRequirement}>
+                    必要ステータスを追加
+                </button>
+                <button type="submit">追加</button>
             </form>
 
-            <table border="1">
+            <form onSubmit={importCsvSubmit}>
+                <input
+                    type="file"
+                    accept=".csv,text/csv"
+                    onChange={(e) => {
+                        setCsvFile(e.target.files?.[0] ?? null);
+                    }}
+                />
+                <button type="submit" disabled={!csvFile}>
+                    CSV一括追加
+                </button>
+            </form>
+
+            <table>
                 <tr>
                     <th>ID</th>
                     <th>職業名</th>
-                    <th>ステータス名１</th>
-                    <th>必要ステータス値１</th>
-                    <th>ステータス名２</th>
-                    <th>必要ステータス値２</th>
+                    <th>必要ステータス</th>
+                    <th>有効・無効</th>
+                    <th>デフォルト</th>
                 </tr>
 
-                {% for id,job_name,status_name_1,requirement_status1_value,status_name_2,
-                        requirement_status2_value,is_active,is_default in master_jobs %}
-                <tr>
-                    <td>{{id}}</td>
-                    <td>{{job_name}}</td>
-                    <td>{{status_name_1}}</td>
-                    <td>{{requirement_status1_value}}</td>
-                    <td>{{status_name_2}}</td>
-                    <td>{{requirement_status2_value}}</td>
-                    <td>{{is_default}}</td>
-                    <td>
-                    <form method="POST" action="{{url_for('admin_toggle_jobs')}}">
-                        <input type="hidden" name="job_id" value="{{id}}">
-                        {% if is_active %}
-                        <button type="submit">無効化</button>
-                        {% else %}
-                        <button type="submit">有効化</button>
-                        {% endif %}
-                    </form>
-                    </td>
-                </tr>
-                {% endfor %}
+                {masterJobs.map((job) => {
+                    return(
+                        <Fragment key={job.id}>
+                        <tr
+                            key={job.id}
+                            className={editingId === job.id ? "editing-row" :""}
+                            onClick={() => setSelectJobId(job.id)}
+                        >
+                            <td>{job.id}</td>
+                            <td>
+                                <div>{job.job_name}</div>
+                                <input
+                                    type="text"
+                                    value={editJobName}
+                                    disabled={editingId !== job.id}
+                                    onChange={(e) => setEditJobName(e.target.value)}
+                                    placeholder="職業名"
+                                />
+                            </td>
+                            <td>
+                                {jobRequirements
+                                    .filter((req) => req.job_id === job.id)
+                                    .map((req) => req.required_status_name)
+                                    .join("・")   
+                            }
+                            </td>
+                            <td>
+                                <select
+                                value={editingId === job.id 
+                                    ? String(editJobIsActive) 
+                                    : String(job.is_active)
+                                }
+                                disabled={editingId !== job.id}
+                                onChange={(e) => 
+                                    setEditJobIsActive(
+                                        e.target.value === "true")}
+                                >
+                                    <option value="true">有効</option>
+                                    <option value="false">無効</option> 
+                                </select>
+                            </td>
+                            <td>
+                                <select
+                                value={editingId === job.id 
+                                    ? String(editJobIsDefault) 
+                                    : String(job.is_default)
+                                }
+                                disabled={editingId !== job.id}
+                                onChange={(e) => 
+                                    setEditJobIsDefault(
+                                        e.target.value === "true")}
+                                >
+                                    <option value="true">有効</option>
+                                    <option value="false">無効</option> 
+                                </select>
+                            </td>
+                            <td><button
+                                    type="button"
+                                    onClick={() =>{                                  
+                                        startEditing(job,jobRequirements)
+                                    } }>
+                                    編集
+                                </button>
+                                <button 
+                                    type="button"
+                                    disabled={editingId !== job.id}
+                                    onClick={() =>{
+                                        editJobSubmit()
+                                    }}>
+                                    変更
+                                </button>
+                            </td> 
+                        </tr>
+                        {(selectJobId === job.id || editingId === job.id)
+                             && (
+                            jobRequirements
+                                .filter((req) => req.job_id === job.id)
+                                .map((req,index) => (
+                                    <tr key={req.id} >
+                                        <td>{req.id}</td>
+                                        <td>
+                                            {editingId === job.id ? (
+                                            <select
+                                            value={editRequirements[index]?.statusId ?? ""}
+                                            onChange={(e) => {
+                                                const statusId = e.target.value 
+
+                                                setEditRequirements((prev) =>
+                                                prev.map((item, itemIndex) =>
+                                                    itemIndex === index
+                                                    ? { ...item, statusId }
+                                                    : item
+                                                )
+                                                );
+                                            }}
+                                            >
+                                                <option value="">ステータスを選択</option>
+
+                                                {masterStatuses.map((status) => (
+                                                    <option key={status.id} value={status.id}>
+                                                    {status.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            req.required_status_name
+                                        )}                        
+                                        </td>
+                                        <td>
+                                            <input
+                                            type="text"
+                                            value={editingId === job.id
+                                                ? editRequirements[index]?.requiredValue ?? ""
+                                                : req.required_status_value
+                                            }
+                                            disabled={editingId !== job.id}
+                                            onChange={(e) => {
+                                                const requiredValue = e.target.value 
+
+                                                setEditRequirements((prev) =>
+                                                    prev.map((item,itemIndex) =>
+                                                        itemIndex === index
+                                                        ? {...item,requiredValue}
+                                                    :item
+                                                    )
+                                                )
+                                            }}
+                                        />
+                                        </td>
+                                        <td>
+                                            <select
+                                                value={editingId === job.id 
+                                                    ? String(editRequirements[index]?.isActive ?? true)
+                                                    : String(req.is_active)
+                                                }
+                                                disabled={editingId !== job.id}
+                                                onChange={(e) => {
+                                                    const isActive = e.target.value === "true";
+
+                                                    setEditRequirements((prev) =>
+                                                    prev.map((item,itemIndex) =>
+                                                        itemIndex === index
+                                                        ? {...item,isActive}
+                                                    :item
+                                                    )
+                                                    )
+                                                }}
+                                            >
+                                                    <option value="true">有効</option>
+                                                    <option value="false">無効</option> 
+                                            </select>
+                                        </td>
+                                        
+                                    </tr>
+                                ))
+                                
+                                
+                            
+                        
+                        )}
+                        </Fragment>
+                    )
+                })}
+                
             </table>
         </div>
     )

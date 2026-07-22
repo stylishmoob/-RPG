@@ -5,7 +5,7 @@ import csv
 import io
 from werkzeug.security import check_password_hash
 from backend.queries import get_time_logs,get_user_categories,get_user_status,get_user_achievements, get_user_jobs,save_time_logs,add_user_category,delete_user_category,get_today_logs,get_category_summary,check_category_achievement,get_daily_summary,status_cir,check_user_job,get_master_categories,add_master_category,get_master_status_rules,add_status_rules,get_master_achievements,add_master_achievement,get_master_statuses,get_master_jobs,get_job_requirements,add_master_job,create_user
-from backend.queries import edit_master_category,add_master_status,edit_master_status,edit_status_rules,edit_master_achievement,toggle_master_job,get_user_master_categories,get_user_by_name,get_user_by_id,import_status_csv,import_category_csv,import_achievement_csv,import_status_rules_csv
+from backend.queries import edit_master_category,add_master_status,edit_master_status,edit_status_rules,edit_master_achievement,get_user_master_categories,get_user_by_name,get_user_by_id,import_status_csv,import_category_csv,import_achievement_csv,import_status_rules_csv,add_admin_job,edit_admin_job
 from backend.decorators import user_required,admin_required
 app=Flask(__name__)
 app.secret_key ="hoge"
@@ -717,10 +717,12 @@ def api_admin_jobs():
 @app.route("/api/admin/jobs/add",methods=["POST"])
 @admin_required
 def api_admin_add_job():
-    job_name=request.form["job_name"]
-    status_id=request.form["status_id"]
-    
-    add_master_job(job_name,status_id)
+    data=request.get_json()
+
+    job_name=data["job_name"]
+    requirements=data["requirements"]
+
+    add_admin_job(job_name,requirements)
 
     return jsonify({
         "success":True,
@@ -730,12 +732,15 @@ def api_admin_add_job():
 @app.route("/api/admin/jobs/edit",methods=["POST"])
 @admin_required
 def api_admin_edit_job():
-    job_name=request.form["job_name"]
-    status_id=request.form["status_id"]
-    
-   
+    data=request.get_json()
 
-    edit_master_job(job_name,status_id)
+    job_id=data["job_id"]
+    job_name=data["job_name"]
+    is_active=data["is_active"]
+    is_default=data["is_default"]
+    requirements=data["requirements"]
+    
+    edit_admin_job(job_id,job_name,is_active,is_default,requirements)
 
     return jsonify({
         "success":True,

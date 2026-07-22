@@ -536,23 +536,6 @@ def edit_master_category(category_id,category_name,category_is_active):
     conn.commit()
     conn.close()
 
-def toggle_master_category(master_category_id):
-    conn=sqlite3.connect(DB_NAME)
-    cur=conn.cursor()
-
-    cur.execute("""
-        UPDATE master_categories 
-        SET is_active = 
-            CASE
-                WHEN is_active=1 THEN 0
-                ELSE 1
-            END
-        WHERE id=?
-        """,(master_category_id,))
-    
-    conn.commit()
-    conn.close()
-
 def get_master_status_rules():
     conn=sqlite3.connect(DB_NAME)
     conn.row_factory=sqlite3.Row
@@ -795,36 +778,74 @@ def get_job_requirements():
 
     return job_requirements
 
-def add_master_job(job_name,status_id_1,required_status1_value,status_id_2,required_status2_value):
+def add_admin_job(job_name,requirements):
     conn=sqlite3.connect(DB_NAME)
     cur=conn.cursor()
+    try:
+        job_id=add_master_job(cur,job_name)
+        add_master_jobrequirements(cur,job_id,requirements)
 
+        conn.commit()
+    except:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+def add_master_job(cur,job_name):
     cur.execute("""
-        INSERT INTO jobs_requirement(job_name,required_status_id_1,required_status1_value,
-                required_status_id_2,required_status2_value)
-                VALUES(?,?,?,?,?)""",(job_name,status_id_1,required_status1_value,
-                                      status_id_2,required_status2_value))
+        INSERT INTO master_jobs
+        (job_name)
+        VALUES(?)""",(job_name,))
     
-    conn.commit()
-    conn.close()
+    job_id=cur.lastrowid
 
-def toggle_master_job(job_id):
+    return job_id
+
+def add_master_jobrequirements(cur,job_id,requirements):
+    for req in requirements:
+        cur.execute("""
+            INSERT INTO job_requirements
+            (job_id,required_status_id,required_status_value)
+            VALUES(?,?,?)
+            """,(job_id,req["statusId"],req["requiredValue"],))
+        
+def edit_admin_job(job_id,job_name,is_active,is_default,requirements):
     conn=sqlite3.connect(DB_NAME)
     cur=conn.cursor()
+    try:
+        edit_master_job(cur,job_id,job_name,is_active,is_default)
+        edit_job_requirement(cur,job_id,requirements)
 
+        conn.commit()
+    except:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+def edit_master_job(cur,job_id,job_name,is_active,is_default):
     cur.execute("""
-        UPDATE jobs_requirement 
-        SET is_active=
-            CASE 
-                WHEN is_acitive=0 THEN 0
-                ELSE 1
-            END
-        WHERE id=?              
-        """,(job_id,))
+        UPDATE master_jobs
+        SET job_name=?,
+            is_active=?,
+            is_default=?
+        WHERE job_id=?""",(job_name,is_active,is_default,job_id))
     
-    conn.commit()
-    conn.close()
-
+def edit_job_requirement(cur,job_id,requirements):
+    for req in requirements:
+        cur.execute("""
+        UPDATE job_requirements
+        SET required_status_id=?,required_status_value=?,is_active=?
+        WHERE id=?
+        AND job_id=?""",(
+            req["statusId"],
+            req["statusValue"],
+            req["isActive"],
+            req["id"],
+            job_id,
+        ))
+    
 def get_users():
     conn=sqlite3.connect(DB_NAME)
     cur=conn.cursor()
@@ -1491,3 +1512,157 @@ def import_status_rules(cur,category_id,status_id,gain_per_hours):
         VALUES(?,?,?)
             """,(category_id,status_id,gain_per_hours))
     
+
+def import_jobs_csv(csv_file):
+    if csv_file is None:
+        return ({
+            "success": False,
+            "message": "CSVファイルがありません",
+        })
+
+    if csv_file.filename == "":
+        return ({
+            "success": False,
+            "message": "ファイルが選択されていません",
+        })
+
+    if not csv_file.filename.lower().endswith(".csv"):
+        return ({
+            "success": False,
+            "message": "CSVファイルを選択してください",
+        })
+    
+    text_file = io.TextIOWrapper(
+            csv_file.stream,
+            encoding="utf-8-sig",
+            newline="",
+        )
+
+    reader = csv.DictReader(text_file)
+
+    required_columns = {
+        "job_name",
+        "required_status_name",
+        "required_status_value",
+    }
+
+    if reader.fieldnames is None:
+        return ({
+            "success": False,
+            "message": "CSVのヘッダーがありません",
+        })
+
+    missing_columns = required_columns - set(reader.fieldnames)
+
+    if missing_columns:
+        return ({
+            "success": False,
+            "message": "必要な列がありません",
+            "missing_columns": list(missing_columns),
+        })
+
+    valid_rows = []
+    job_rows= []
+    errors = []
+
+    for line_number, row in enumerate(reader, start=2):
+        job_name = row["job_name"].strip()
+        required_status_name = row["required_status_name"].strip()
+        required_status_value = row["required_status_value"].strip()
+
+        if not job_name:
+            errors.append({
+                "line": line_number,
+                "message": "job_nameが空です",
+            })
+            continue
+
+        if not required_status_name:
+            errors.append({
+                "line": line_number,
+                "message": "required_status_nameが空です",
+            })
+            continue
+
+        if not required_status_value:
+            errors.append({
+                "line": line_number,
+                "message": "required_status_valueが空です",
+            })
+            continue
+
+        status_id=get_status_id_by_name(required_status_name)
+
+        job_rows.append({
+            "job_name":job_name,
+        })
+
+        valid_rows.append({
+            "required_status_id":status_id,
+            "required_status_value":required_status_value,
+        })
+
+    if errors:
+        return ({
+            "success": False,
+            "message": "CSVの内容にエラーがあります",
+            "imported_count": 0,
+            "errors": errors,
+        })
+    
+    if not valid_rows:
+        return ({
+            "success": False,
+            "message": "追加できるデータがありません",
+        })
+
+        
+    conn=sqlite3.connect(DB_NAME)
+    cur=conn.cursor()
+
+    try:
+        for job in job_rows:
+            import_master_jobs(cur,job)
+
+        for row in valid_rows:
+            import_job_requirements(
+                cur,
+                job_id,
+                required_status_id,
+                ,
+            )
+
+        conn.commit()
+
+
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
+    import_count = len(valid_rows)
+    
+    return ({
+        "success": True,
+        "message": f"{import_count}件追加しました",
+        "imported_count": import_count,
+        "errors": [],
+    })
+    
+def get_status_id_by_name(status_name):
+    conn=sqlite3.connect(DB_NAME)
+    cur=conn.cursor()
+
+    cur.execute("""
+        SELECT id
+        FROM statuses
+        WHERE status_name=?""",(status_name,))
+
+    status_id=cur.fetchone()
+
+    conn.close()
+
+    return status_id

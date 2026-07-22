@@ -241,8 +241,8 @@ function AdminStatuses(){
                                     setEditStatusIsActive(
                                         e.target.value === "true")}
                                 >
-                                <option value="true">有効</option>
-                                <option value="false">無効</option> 
+                                    <option value="true">有効</option>
+                                    <option value="false">無効</option> 
                             </select>
                         </td>
                         <td><button

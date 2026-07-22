@@ -160,7 +160,7 @@ function AdminCategories(){
                 <button type="submit">追加</button>
             </form>
 
-             <form onSubmit={importCsvSubmit}>
+            <form onSubmit={importCsvSubmit}>
                 <input
                     type="file"
                     accept=".csv,text/csv"

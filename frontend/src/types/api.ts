@@ -164,6 +164,13 @@ export type Requirements = {
     requiredValue:string;
 }
 
+export type editRequirements = {
+    id:string;
+    statusId:string;
+    requiredValue:string;
+    isActive:boolean;
+}
+
 export type JobsType = {
     id:string;
     job_name:string;
