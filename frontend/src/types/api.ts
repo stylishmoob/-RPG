@@ -78,7 +78,7 @@ export type savedataType = {
 };
 
 export type CategoryDataType = {
-    categories: CategoryType[];
+    user_categories: CategoryType[];
     master_categories: CategoryType[];
 };
 

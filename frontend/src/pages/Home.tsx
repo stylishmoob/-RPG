@@ -50,8 +50,8 @@ type HomeDataType = {
     exp: ExpType;
     job: JobType;
     status: StatusType[];
-    achievements: AchievementType[];
-    categories: CategoryType[];
+    user_achievements: AchievementType[];
+    user_categories: CategoryType[];
     today_logs: TodayLogType[];
     is_admin: boolean;
 };
@@ -71,11 +71,11 @@ function Home() {
     );
     const navigate = useNavigate();
 
-    const categories = HomeData?.categories ?? [];
+    const user_categories = HomeData?.user_categories ?? [];
 
     const saveId = localStorage.getItem("CategoryId");
 
-    const exists = categories.some(
+    const exists = user_categories.some(
         category => String(category.id) === saveId
     );
 
@@ -110,14 +110,14 @@ function Home() {
     },[navigate]);
 
     useEffect(() => {
-        if (categories.length === 0) return;
+        if (user_categories.length === 0) return;
 
         if (exists){
         setCategoryId(saveId!);
         }else{
-        setCategoryId(String(categories[0].id));
+        setCategoryId(String(user_categories[0].id));
         }
-    },[categories]);
+    },[user_categories]);
 
     useEffect(() => {
         localStorage.setItem("CategoryId",CategoryId);
@@ -322,7 +322,7 @@ function Home() {
                             type="button" 
                             className="btn" 
                             onClick={timerButton} 
-                            disabled={categories.length===0}>
+                            disabled={user_categories.length===0}>
                             <span>{IsRunning ? "STOP" : "START"}</span>
                             </button>     
                             <select 
@@ -331,7 +331,7 @@ function Home() {
                             onChange={(e) => setCategoryId(e.target.value)}
                             required>
                             
-                            {categories.map((category) =>(
+                            {user_categories.map((category) =>(
                                 <option key={category.id} value={category.id}>
                                     {category.name}
                                 </option>

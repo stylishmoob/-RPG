@@ -10,68 +10,11 @@ BASE_DIR=os.path.dirname(os.path.abspath(__file__))
 DB_NAME=os.path.join(BASE_DIR,"rpg_table.db")
 
 
-def get_time_logs(user_id):
-    conn=sqlite3.connect(DB_NAME)
-    cur=conn.cursor()
 
-    cur.execute("""
-        SELECT master_categories.category_name,
-                time_logs.start_time,
-                time_logs.end_time,
-                time_logs.duration_seconds
-        FROM time_logs
-        JOIN categories
-        ON time_logs.category_id=categories.id
-        JOIN master_categories
-        ON categories.master_category_id=master_categories.id
-        WHERE time_logs.user_id=? AND master_categories.is_active=1
-         """,(user_id,))
-    
-    logs=cur.fetchall()
 
-    conn.close()
-    return logs
 
-def get_user_categories(user_id):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
-    cur=conn.cursor()
 
-    cur.execute("""
-        SELECT categories.id AS category_id,
-               category_name 
-        FROM categories
-        JOIN master_categories
-        ON categories.master_category_id=master_categories.id
-        WHERE user_id=? AND master_categories.is_active=1""",(user_id,))
-    
-    user_categories=cur.fetchall()
 
-    conn.close()
-    return user_categories
-
-def get_user_status(user_id):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
-    cur=conn.cursor()
-
-    cur.execute("""
-        SELECT  users_status.id AS status_id, 
-                status_name,
-                status_value,
-                status_type
-        FROM users_status
-        JOIN users
-        ON users.id=users_status.user_id
-        JOIN statuses
-        ON statuses.id=users_status.status_id
-        WHERE user_id=?
-        ORDER BY statuses.id""",(user_id,))
-    
-    user_status_row=cur.fetchall()
-
-    conn.close()
-    return user_status_row
 
 def get_user_by_id(user_id):
     conn=sqlite3.connect(DB_NAME)
@@ -140,58 +83,11 @@ def get_status_up_rules():
     conn.close()
     return status_up_rules
 
-def get_user_achievements(user_id):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
-    cur=conn.cursor()
 
-    cur.execute("""
-        SELECT  
-            achievements.achievement_name,
-            achievements.title_name            
-        FROM user_achievements
-        JOIN achievements
-        ON user_achievements.achievement_id=achievements.id
-        WHERE user_achievements.user_id=? AND achievements.is_active=1
-        ORDER BY achievements.id ASC  """,(user_id,))
-    
-    user_achievements=cur.fetchall()
 
-    conn.close()
-    return user_achievements
 
-def get_user_jobs(user_id):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
-    cur=conn.cursor()
 
-    cur.execute("""
-        SELECT  users_job.job_id AS job_id,
-                master_jobs.job_name AS job_name
-        FROM users_job
-        JOIN master_jobs
-        ON users_job.job_id=jobs.id
-        WHERE users_job.user_id=? 
-        AND master_jobs.is_active=1
-        """,(user_id,))
-    
-    user_jobs=cur.fetchone() 
 
-    conn.close()
-
-    return user_jobs
-
-def save_time_logs(user_id,selected_category_id,start_time,end_time,duration_seconds):
-    conn=sqlite3.connect(DB_NAME)
-    cur=conn.cursor()
-    
-    cur.execute("""
-                INSERT INTO time_logs(user_id,category_id,start_time,end_time,duration_seconds)
-                VALUES(?,?,?,?,?)
-                """,(user_id,selected_category_id,start_time,end_time,duration_seconds))
-    
-    conn.commit()
-    conn.close()
 
 def get_user_master_categories():
     conn=sqlite3.connect(DB_NAME)
@@ -209,97 +105,13 @@ def get_user_master_categories():
     conn.close()
     return user_master_categories
 
-def add_user_category(user_id,master_category_id):
-    conn=sqlite3.connect(DB_NAME)
-    cur=conn.cursor()
 
-    cur.execute("""
-        INSERT OR IGNORE INTO categories(user_id,master_category_id)
-        VALUES (?,?)""",(user_id,master_category_id)) 
-    
-    conn.commit()
-    conn.close()
 
-def edit_user_category(user_id,master_category_id,category_id):
-    conn=sqlite3.connect(DB_NAME)
-    cur=conn.cursor()
 
-    cur.execute("""
-        UPDATE categories SET master_category_id=?
-        WHERE id =? AND user_id=?
-        """,(master_category_id,category_id,user_id))
-    
-    conn.commit()
-    conn.close()
 
-def delete_user_category(user_id,category_id):
-    conn=sqlite3.connect(DB_NAME)
-    cur=conn.cursor()
 
-    cur.execute("""
-        DELETE FROM categories
-        WHERE id =? AND user_id=?""",(category_id,user_id))
 
-    cur.execute("""
-        DELETE FROM time_logs
-        WHERE category_id=? AND user_id=?""",(category_id,user_id))
-    
-    conn.commit()
-    conn.close()
 
-def get_today_logs(user_id):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
-    cur=conn.cursor()
-
-    cur.execute("""
-        SELECT 
-            time_logs.category_id AS category_id,
-            master_categories.category_name AS category_name,
-            strftime('%H:%M:%S',time_logs.start_time,'localtime') AS start_time,
-            strftime('%H:%M:%S',time_logs.end_time,'localtime') AS end_time,
-            time_logs.duration_seconds AS duration_seconds
-        FROM time_logs
-        JOIN categories 
-            ON time_logs.category_id=categories.id
-        JOIN master_categories
-            ON categories.master_category_id=master_categories.id
-        WHERE DATE(time_logs.start_time,'localtime')=DATE('now','localtime')
-            AND time_logs.user_id=?
-            AND master_categories.is_active=1
-        ORDER BY time_logs.start_time
-        """,(user_id,))
-    
-    today_logs=cur.fetchall()
-    conn.close()
-
-    return today_logs
-
-def get_category_summary(period,user_id):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
-    cur=conn.cursor()
-
-    and_sql=check_period(period)
-    cur.execute(f"""
-        SELECT master_categories.id AS category_id,
-               master_categories.category_name AS category_name,
-               SUM(time_logs.duration_seconds) AS category_total_seconds     
-        FROM time_logs
-        JOIN categories
-                ON time_logs.category_id=categories.id
-        JOIN master_categories
-            ON categories.master_category_id=master_categories.id
-        WHERE time_logs.user_id=?
-        {and_sql} 
-        AND master_categories.is_active=1
-        GROUP BY master_categories.id
-        ORDER BY category_total_seconds DESC
-                """,(user_id,))
-    
-    category_summary=cur.fetchall()
-    conn.close()
-    return category_summary
 
 def check_category_achievement(user_id):
     new_achievement_count=0
@@ -341,51 +153,9 @@ def check_category_achievement(user_id):
         
 #多分SELECT JOIN　であたらしい配列作れば行けそう
 
-def get_daily_summary(period,user_id):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
-    cur=conn.cursor()
 
-    and_sql=check_period(period)
 
-    cur.execute(f"""
-        SELECT time_logs.category_id AS category_id,
-                master_categories.category_name AS category_name,
-                DATE(time_logs.start_time) AS log_date,
-                SUM(time_logs.duration_seconds) AS daily_total_seconds
-        FROM time_logs
-        JOIN categories
-            ON time_logs.category_id=categories.id
-        JOIN master_categories
-            ON categories.master_category_id=master_categories.id
-        WHERE time_logs.user_id=?
-        {and_sql}
-        AND is_active=1
-        GROUP BY time_logs.category_id,
-                log_date
-        ORDER BY log_date,
-                daily_total_seconds DESC
-                """,(user_id,))
-    
-    daily_category_summary=cur.fetchall()
 
-    conn.close()
-
-    return daily_category_summary
-
-def check_period(period):
-    if period =="today":
-        return "AND DATE(start_time,'localtime')=DATE('now','localtime')"
-    elif period == "7days":
-        return "AND DATE(start_time,'localtime') >= DATE('now','localtime','-6 days')"
-    elif period == "week":
-        return "AND DATE(start_time,'localtime') >= DATE('now','localtime','-'||strftime('%w','now','localtime') || ' days')"
-    elif period == "month":
-        return "AND strftime('%Y-%m',start_time,'localtime') =strftime('%Y-%m','now','localtime')"
-    elif period=="year":
-        return "AND strftime('%Y',start_time,'localtime')=strftime('%Y','now','localtime')"
-    else:
-        return ""
        
 
 def status_cir(category_id,duration_seconds,user_id):
@@ -1561,8 +1331,7 @@ def import_jobs_csv(csv_file):
             "missing_columns": list(missing_columns),
         })
 
-    valid_rows = []
-    job_rows= []
+    jobs_data={}
     errors = []
 
     for line_number, row in enumerate(reader, start=2):
@@ -1591,50 +1360,53 @@ def import_jobs_csv(csv_file):
             })
             continue
 
+
+        try:
+            required_status_value=int(required_status_value)
+
+        except ValueError:
+            errors.append({
+                "line":line_number,
+                "message":"required_status_valueは整数で入力してください",
+            })
+            continue
+
         status_id=get_status_id_by_name(required_status_name)
 
-        job_rows.append({
-            "job_name":job_name,
-        })
+        if status_id is None:
+            errors.append({
+                "line": line_number,
+                "message": f"ステータス「{required_status_name}」が存在しません",
+            })
+            continue
 
-        valid_rows.append({
+        if job_name not in jobs_data:
+            jobs_data[job_name]=[]
+
+        jobs_data[job_name].append({
             "required_status_id":status_id,
             "required_status_value":required_status_value,
         })
 
-    if errors:
-        return ({
-            "success": False,
-            "message": "CSVの内容にエラーがあります",
-            "imported_count": 0,
-            "errors": errors,
-        })
-    
-    if not valid_rows:
-        return ({
-            "success": False,
-            "message": "追加できるデータがありません",
-        })
-
-        
     conn=sqlite3.connect(DB_NAME)
     cur=conn.cursor()
-
+    
     try:
-        for job in job_rows:
-            import_master_jobs(cur,job)
+        imported_count =0
 
-        for row in valid_rows:
-            import_job_requirements(
-                cur,
-                job_id,
-                required_status_id,
-                ,
-            )
+        for job_name,requirements in jobs_data.items():
+            job_id =import_master_job(cur,job_name)
+
+            for requirement in requirements:
+                import_job_requirement(
+                    cur,
+                    job_id,
+                    requirement["required_status_id"],
+                    requirement["required_status_value"]
+                )
+                imported_count +=1
 
         conn.commit()
-
-
 
     except Exception:
         conn.rollback()
@@ -1642,13 +1414,11 @@ def import_jobs_csv(csv_file):
 
     finally:
         conn.close()
-
-    import_count = len(valid_rows)
     
     return ({
         "success": True,
-        "message": f"{import_count}件追加しました",
-        "imported_count": import_count,
+        "message": f"{imported_count}件追加しました",
+        "imported_count": imported_count,
         "errors": [],
     })
     
@@ -1661,8 +1431,26 @@ def get_status_id_by_name(status_name):
         FROM statuses
         WHERE status_name=?""",(status_name,))
 
-    status_id=cur.fetchone()
+    row=cur.fetchone()
 
     conn.close()
 
-    return status_id
+    return row[0] if row else None
+
+def import_master_job(cur,job_name):
+    cur.execute("""
+        INSERT INTO master_jobs
+        (job_name)
+        VALUES=(?)""",(job_name,))
+
+    return cur.lastrowid
+
+def import_job_requirement(cur,job_id,status_id,status_value):
+    cur.execute("""
+        INSERT INTO job_requirements
+        (job_id,
+        required_status_id,
+        required_status_value)
+        VALUES=(?,?,?)""",(job_id,status_id,status_value))
+
+    

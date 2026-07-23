@@ -12,7 +12,7 @@ function Category() {
 
     const navigate = useNavigate();
 
-    const categories = categoryData?.categories ?? [];
+    const user_categories = categoryData?.user_categories ?? [];
 
     const master_categories=categoryData?.master_categories ?? [];
 
@@ -21,7 +21,7 @@ function Category() {
     },[navigate]);
 
     useEffect(() => {
-        if(categories.length === 0) {
+        if(user_categories.length === 0) {
             setSelectedCategoryId("");
             return;
         }
@@ -102,7 +102,7 @@ function Category() {
                         <div className="category-all">
                             <div className="category-all-inner">
                                 <table>
-                                    {categories.map((category) => (
+                                    {user_categories.map((category) => (
                                     <tr key={category.id}>
                                         <td>{category.name}</td>
                                         <td>  
