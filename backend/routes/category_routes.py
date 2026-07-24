@@ -6,12 +6,11 @@ from backend.queries.categories_queries import (
     get_user_master_categories,
     delete_user_category,
     add_user_category,
-    edit_user_category
 )
 
 category_bp = Blueprint("category", __name__)
 
-@category_bp.get("/api/category",methods=["GET"])
+@category_bp.get("/api/category")
 @user_required
 def api_category():
     user_id=get_current_user_id()
@@ -39,7 +38,7 @@ def api_category():
         ],
     })
 
-@category_bp.delete("/api/category/<int:category_id>",methods=["DELETE"])
+@category_bp.delete("/api/category/<int:category_id>")
 @user_required
 def api_category_delete(category_id):
     user_id=get_current_user_id()
@@ -49,7 +48,7 @@ def api_category_delete(category_id):
         "success":True,
     })
     
-@category_bp.post("/api/category/add",methods=["POST"])
+@category_bp.post("/api/category/add")
 @user_required
 def api_category_add():
     data= request.get_json()

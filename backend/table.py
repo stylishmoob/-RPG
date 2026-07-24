@@ -20,6 +20,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             status_name TEXT NOT NULL UNIQUE,
             status_type TEXT NOT NULL,
+            default_value REAL NOT NULL DEFAULT 10,
             is_active INTEGER NOT NULL DEFAULT 1
             )""")
 
@@ -99,7 +100,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             status_id INTEGER NOT NULL,
-            status_value REAL DEFAULT 10,
+            status_value REAL NOT NULL,
             UNIQUE(user_id,status_id),
     
             FOREIGN KEY(user_id) REFERENCES users(id),
@@ -147,6 +148,7 @@ def init_db():
 
 def add_master_user_id():
     conn=sqlite3.connect(DB_NAME)
+    conn.row_factory=sqlite3.Row
     cur=conn.cursor()
 
     user_name="administrator"
@@ -180,36 +182,20 @@ def add_master_user_id():
         cur.execute("""
                 SELECT id
                 FROM users
-                WHERE is_admin=1
-                """)
+                WHERE user_name=?
+                """,(user_name,))
         
-        user_id = cur.fetchone()[0]
-        
-        statuses = {
-        "HP": 100,
-        "MP": 30,
-        "STR": 10,
-        "INT": 10,
-        "SKL": 10,
-        "CRE": 10,
-        "WIL": 10
-    }
-        for status_name,status_value in statuses.items():
-            cur.execute("""
-                SELECT id
-                FROM master_statuses
-                WHERE status_name=?
-                """,(status_name,))
-            
-            status_row=cur.fetchone()
+        user_id = cur.lastrowid
+    
+        cur.execute("""
+            SELECT id,default_value
+            FROM master_statuses
+            WHERE is_active=1
+            """)
 
-            if status_row is None:
-                raise ValueError(
-                    f"ステータスが存在しません:{status_name}"
-                )
+        statuses =cur.fetchall()
 
-            status_id =status_row[0]
-
+        for status in statuses:
             cur.execute("""
                 INSERT OR IGNORE INTO user_statuses
                 (user_id,
@@ -217,8 +203,8 @@ def add_master_user_id():
                 status_value
                 )
                 VALUES(?,?,?)""",(user_id,
-                                  status_id,
-                                  status_value,))
+                                    status["id"],
+                                    status["default_value"],))
             
         cur.execute("""
             INSERT INTO user_jobs(
@@ -226,8 +212,7 @@ def add_master_user_id():
                 job_id)
             VALUES(?,?)
             """,(user_id,default_job_id,))
-        
-            
+              
         conn.commit()
 
     except:
@@ -241,16 +226,16 @@ def init_statuses():
     conn=sqlite3.connect(DB_NAME)
     cur=conn.cursor()
 
-    init_statuses=[("HP","front"),("MP","front"),("STR","front"),("INT","front"),
-                   ("SKL","front"),("CRE","front"),
-                   ("WIL","front")]
+    init_statuses=[("HP","front",100),("MP","front",30),("STR","front",10),("INT","front",10),
+                   ("SKL","front",10),("CRE","front",10),
+                   ("WIL","front",10)]
     
-    for status_name,status_type in init_statuses:
+    for status_name,status_type,default_value in init_statuses:
         cur.execute("""
             INSERT OR IGNORE INTO master_statuses
-            (status_name,status_type)
-            VALUES(?,?)
-        """,(status_name,status_type))
+            (status_name,status_type,default_value)
+            VALUES(?,?,?)
+        """,(status_name,status_type,default_value))
 
     conn.commit()
     conn.close()

@@ -6,34 +6,6 @@ app=Flask(__name__)
 
 BASE_DIR=os.path.dirname(os.path.abspath(__file__))
 DB_NAME=os.path.join(BASE_DIR,"rpg_table.db")
-
-def get_time_logs(user_id):
-    conn=sqlite3.connect(DB_NAME)
-    cur=conn.cursor()
-
-    try:
-        cur.execute("""
-            SELECT master_categories.category_name,
-                    time_logs.start_time,
-                    time_logs.end_time,
-                    time_logs.duration_seconds
-            FROM time_logs
-            JOIN user_categories
-            ON time_logs.category_id=user_categories.id
-            JOIN master_categories
-            ON user_categories.master_category_id=master_categories.id
-            WHERE time_logs.user_id=? AND master_categories.is_active=1
-            """,(user_id,))
-        
-        logs=cur.fetchall()
-        return logs
-
-    except Exception:
-        conn.rollback()
-        raise
-
-    finally:
-        conn.close()
     
 
 def get_user_statuses(user_id):
@@ -93,25 +65,39 @@ def get_user_by_id(user_id):
 
     finally:
         conn.close()
-        
-def get_user_achievements(user_id):
+
+def status_cir(category_id,duration_seconds,user_id):
     conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
     cur=conn.cursor()
 
     try:
         cur.execute("""
-            SELECT  
-                master_achievements.achievement_name,
-                master_achievements.title_name            
-            FROM user_achievements
-            JOIN master_achievements
-            ON user_achievements.achievement_id=master_achievements.id
-            WHERE user_achievements.user_id=? AND master_achievements.is_active=1
-            ORDER BY master_achievements.id ASC  """,(user_id,))
-        
-        user_achievements=cur.fetchall()
-        return user_achievements
+            SELECT sur.status_id,
+                    sur.gain_per_hours
+            FROM user_categories 
+            JOIN status_up_rules sur
+                ON user_categories.master_category_id = sur.category_id
+            WHERE user_categories.id=?""",(category_id,))
+
+        rules=cur.fetchall()
+
+        for status_id,gain_per_hours in rules:
+            gain=duration_seconds / 3600 * gain_per_hours
+
+            cur.execute("""
+                UPDATE user_statuses
+                SET status_value=status_value+?
+                WHERE status_id=? AND user_id=?""",
+                (gain,status_id,user_id))
+        #経験値効率設定変更可
+        exp=(duration_seconds / 3600 )*(360) 
+
+        cur.execute("""
+            UPDATE users
+            SET user_level=user_level+?
+            WHERE users.id=?""",(exp,user_id))
+            
+        conn.commit()
 
     except Exception:
         conn.rollback()
@@ -119,32 +105,8 @@ def get_user_achievements(user_id):
 
     finally:
         conn.close()
-    
 
-def get_user_jobs(user_id):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
-    cur=conn.cursor()
 
-    try:
-        cur.execute("""
-            SELECT  user_jobs.job_id AS job_id,
-                    master_jobs.job_name AS job_name
-            FROM user_jobs
-            JOIN master_jobs
-            ON user_jobs.job_id=master_jobs.id
-            WHERE user_jobs.user_id=? 
-            AND master_jobs.is_active=1
-            """,(user_id,))
-        
-        user_jobs=cur.fetchone() 
-        return user_jobs
 
-    except Exception:
-        conn.rollback()
-        raise
-
-    finally:
-        conn.close()
 
     

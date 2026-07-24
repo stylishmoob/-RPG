@@ -9,8 +9,6 @@ from backend.queries.categories_queries import (
 
 from backend.queries.statuses_queries import (
     get_user_statuses,
-    get_user_achievements,
-    get_user_jobs,
     get_user_by_id
 )
 
@@ -18,11 +16,18 @@ from backend.queries.time_logs_queries import(
     get_today_logs,
     get_time_logs,
 )
+from backend.queries.jobs_queries import(
+    get_user_jobs,
+)
+from backend.queries.achievements_queries import(
+    get_user_achievements,
+)
+
 
 
 home_bp = Blueprint("home", __name__)
 
-@home_bp.route("/api/home")
+@home_bp.get("/api/home")
 @user_required
 def api_home():
     user_id=get_current_user_id()

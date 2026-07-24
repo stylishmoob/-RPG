@@ -5,6 +5,7 @@ function Login() {
 
     const[userName,setUserName] = useState("");
     const[password,setPassword] = useState("");
+    const[errorMessage,setErrorMessage] = useState("");
 
     const navigate=useNavigate();
 
@@ -28,36 +29,45 @@ function Login() {
                 return;
             }
 
-            alert(data.message ?? "ログインに失敗しました");
+            setErrorMessage(data.message ?? "ログインに失敗しました");
         }catch(error){
             console.error(error);
-            alert("サーバーとの通信に失敗しました")
+            setErrorMessage("サーバーとの通信に失敗しました")
         }
     }
 
     return (
-            <div className="login">
-                <h1>ログイン</h1>
+        <div className="login">
+            <h1>ログイン</h1>
+            <form onSubmit={(e) => {
+                e.preventDefault();
+                login()
+            }}>
                 <input 
                     value={userName}
                     onChange={(e)=>setUserName(e.target.value)}
+                    required
                 />
                 <input 
                     type="password"
                     value={password}
                     onChange={(e)=>setPassword(e.target.value)}
+                    required
                 />
-
-                <button onClick={login}>
+                <button type="submit">
                     ログイン
                 </button>
-            
+            </form>
 
-                <div className="links">
-                    <Link to="/register"></Link>    
-                </div>
-            </div>  
-    );
+            {errorMessage && (
+                <p className="error-message" >{errorMessage}</p>
+            )}
+
+            <div className="links">
+                <Link to="/register">新規登録</Link>    
+            </div>
+        </div> 
+    )
 }
 
 export default Login;

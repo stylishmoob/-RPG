@@ -2,16 +2,24 @@ from flask import Blueprint, jsonify,request,session
 from backend.utils.decorators import user_required
 from backend.utils.auth_utils import get_current_user_id
 from backend.queries.statuses_queries import (
-    get_time_logs,
     get_user_statuses,
-    get_user_achievements,
-    get_user_jobs,
     get_user_by_id
+)
+from backend.queries.jobs_queries import (
+    get_user_jobs,
+)
+
+from backend.queries.achievements_queries import (
+    get_user_achievements,
+)
+
+from backend.queries.time_logs_queries import(
+    get_time_logs,
 )
 
 status_bp = Blueprint("status",__name__)
 
-@status_bp.get("/api/status",methods=["GET"])
+@status_bp.get("/api/status")
 @user_required
 def api_status():
     user_id=get_current_user_id()

@@ -8,7 +8,7 @@ from backend.queries.time_logs_queries import(
 
 history_bp = Blueprint("history", __name__)
 
-@history_bp.get("/api/history",methods=["GET"])
+@history_bp.get("/api/history")
 @user_required
 def api_history():
     user_id=get_current_user_id()
