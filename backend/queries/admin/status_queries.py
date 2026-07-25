@@ -1,13 +1,10 @@
 import sqlite3
 from flask import Flask
-import os
 import csv
 import io
+from backend.config import DB_NAME
 
 app=Flask(__name__)
-
-BASE_DIR=os.path.dirname(os.path.abspath(__file__))
-DB_NAME=os.path.join(BASE_DIR,"rpg_table.db")
 
 def get_master_statuses():
     conn=sqlite3.connect(DB_NAME)
@@ -29,15 +26,15 @@ def get_master_statuses():
         conn.close()
         
 
-def add_master_status(status_name,status_type):
+def add_master_status(status_name,default_value,status_type):
     conn=sqlite3.connect(DB_NAME)
     cur=conn.cursor()
 
     try:
         cur.execute("""
             INSERT INTO master_statuses
-            (status_name,status_type)
-            VALUES(?,?)""",(status_name,status_type))
+            (status_name,default_value,status_type)
+            VALUES(?,?)""",(status_name,default_value,status_type))
         
         conn.commit()
 
@@ -48,15 +45,15 @@ def add_master_status(status_name,status_type):
     finally:
         conn.close()
 
-def edit_master_status(status_id,new_status_name,status_type,is_active):
+def edit_master_status(status_id,status_name,default_value,status_type,is_active):
     conn=sqlite3.connect(DB_NAME)
     cur=conn.cursor()
 
     try:
         cur.execute("""
             UPDATE master_statuses
-            SET status_name=?,status_type=?,is_active=?
-            WHERE id=?""",(new_status_name,status_type,is_active,status_id))
+            SET status_name=?,default_value=?,status_type=?,is_active=?
+            WHERE id=?""",(status_name,default_value,status_type,is_active,status_id))
         
         conn.commit()
 
@@ -92,14 +89,14 @@ def get_status_id(status_name):
         conn.close()
 
     
-def import_master_status(status_name,status_type):
+def import_master_status(status_name,default_value,status_type):
     conn=sqlite3.connect(DB_NAME)
     cur=conn.cursor()
 
     cur.execute("""
         INSERT INTO master_statuses
-        (status_name,status_type)
-        VALUES(?,?)""",(status_name,status_type))
+        (status_name,default_value,status_type)
+        VALUES(?,?)""",(status_name,default_value,status_type))
 
 def import_status_csv(csv_file):
     if csv_file is None:
@@ -130,6 +127,7 @@ def import_status_csv(csv_file):
 
     required_columns = {
         "status_name",
+        "default_value",
         "status_type",
     }
 
@@ -153,6 +151,7 @@ def import_status_csv(csv_file):
 
     for line_number, row in enumerate(reader, start=2):
         status_name = row["status_name"].strip()
+        default_value=row["default_value"].strip()
         status_type = row["status_type"].strip().lower()
 
         if not status_name:
@@ -161,6 +160,13 @@ def import_status_csv(csv_file):
                 "message": "status_nameが空です",
             })
             continue
+
+        if not default_value:
+                    errors.append({
+                        "line": line_number,
+                        "message": "default_valueが空です",
+                    })
+                    continue
 
         if status_type not in ("front", "back"):
             errors.append({
@@ -171,6 +177,7 @@ def import_status_csv(csv_file):
 
         valid_rows.append({
             "status_name": status_name,
+            "default_value":default_value,
             "status_type": status_type,
         })
 
@@ -197,6 +204,7 @@ def import_status_csv(csv_file):
             import_master_status(
                 cur,
                 status_name=(row.get("status_name") or "").strip(),
+                default_value=(row.get("default_value") or "").strip(),
                 status_type=(row.get("status_type") or "").strip().lower(),
             )
 

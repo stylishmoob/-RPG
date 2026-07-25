@@ -1,12 +1,8 @@
 import sqlite3
 from flask import Flask
-import os
+from backend.config import DB_NAME
 
 app=Flask(__name__)
-
-BASE_DIR=os.path.dirname(os.path.abspath(__file__))
-DB_NAME=os.path.join(BASE_DIR,"rpg_table.db")
-    
 
 def get_user_statuses(user_id):
     conn=sqlite3.connect(DB_NAME)
@@ -21,7 +17,7 @@ def get_user_statuses(user_id):
                     status_type
             FROM user_statuses
             JOIN users
-            ON users.id=use_statuses.user_id
+            ON users.id=user_statuses.user_id
             JOIN master_statuses
             ON master_statuses.id=user_statuses.status_id
             WHERE user_id=?

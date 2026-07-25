@@ -1,17 +1,14 @@
 import sqlite3
 from flask import Flask
-import os
 import csv
 import io
+from backend.config import DB_NAME
 
 from backend.queries.admin.status_queries import(
     get_status_id_by_name,
 )
 
 app=Flask(__name__)
-
-BASE_DIR=os.path.dirname(os.path.abspath(__file__))
-DB_NAME=os.path.join(BASE_DIR,"rpg_table.db")
 
 def get_master_jobs():
     conn=sqlite3.connect(DB_NAME)

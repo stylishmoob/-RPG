@@ -1,11 +1,8 @@
 import sqlite3
 from flask import Flask
-import os
+from backend.config import DB_NAME
 
 app=Flask(__name__)
-
-BASE_DIR=os.path.dirname(os.path.abspath(__file__))
-DB_NAME=os.path.join(BASE_DIR,"rpg_table.db")
 
 def get_user_jobs(user_id):
     conn=sqlite3.connect(DB_NAME)
@@ -23,7 +20,7 @@ def get_user_jobs(user_id):
             AND master_jobs.is_active=1
             """,(user_id,))
         
-        user_jobs=cur.fetchone() 
+        user_jobs=cur.fetchall() 
         return user_jobs
 
     except Exception:

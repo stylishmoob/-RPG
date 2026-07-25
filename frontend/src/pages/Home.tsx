@@ -1,67 +1,11 @@
 import { useState,useRef,useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import type { HomeDataType,savedataType } from "../types/api";
+
 import "../styles/home.css";
 
-type UserType = {
-    id: number;
-    name: string;
-    level: string;
-};
 
-type ExpType = {
-    current: string;
-    next: string;
-    percent: string;
-};
-
-type JobType = {
-    name: string | null;
-};
-
-type StatusType = {
-    id: string;
-    name: string;
-    value: number;
-    type: string;
-};
-
-type AchievementType = {
-    achievement_name: string;
-    title_name: string;
-};
-
-type CategoryType = {
-    id: string;
-    name: string;
-};
-
-type TodayLogType = {
-    category_id: string;
-    category_name: string;
-    start_time: string;
-    end_time: string;
-    duration_seconds: string;
-};
-
-type HomeDataType = {
-    success: boolean;
-    user: UserType;
-    exp: ExpType;
-    job: JobType;
-    status: StatusType[];
-    user_achievements: AchievementType[];
-    user_categories: CategoryType[];
-    today_logs: TodayLogType[];
-    is_admin: boolean;
-};
-
-type savedataType = {
-    category_id: string;
-    start_time: string | null;
-    end_time: string;
-    duration_seconds: number;
-};
 
 function Home() {
     const [HomeData,setHomeData] = useState<HomeDataType | null>(null);
@@ -127,8 +71,8 @@ function Home() {
         return <div>Loading...</div>;
     }
 
-    const HP = HomeData.status.find(s => s.name === "HP");
-    const MP = HomeData.status.find(s => s.name === "MP");
+    const HP = HomeData.user_statuses.find(s => s.name === "HP");
+    const MP = HomeData.user_statuses.find(s => s.name === "MP");
 
      if (!HP || !MP){
         return <div>ステータスデータが不足しています</div>;
@@ -222,196 +166,197 @@ function Home() {
     }
         
   return (
-    <div className="main">     
-        <div className="app">
-            <div className="left-column">
-                <div className="card profile-box" id="profile-box">
-                    <div className="card-inner">
-                        <div className="card-content">
-                            <h3>PROFILE</h3>
-                            <div className="profile-main">
-                                <div className="player-image"> 
-                                    
-                                </div>
-                                <div id="user_name" className="user-name">
-                                    <div className="NAME">NAME</div> 
-                                    <div className="NAME-value">{HomeData.user.name}</div> 
-                                </div>
-                                <div id="job_name" className="job-name">
-                                    <div className="className">CLASS</div>
-                                    <div className="className-value">{HomeData.job.name ?? "なし"}</div>
-                                </div>
-                            </div>
-                        
-                            <div className="lv-exp-card">
-                                <div id="user_level" className="user-level">
-                                    <div className="LEVEL">Lv.<span className="LEVEL-value">{HomeData.user.level}</span>
-                                    </div>  
-                                </div>  
-                                <div id="level-up" className="level-up">LEVEL UP!!</div>   
-                    
-
-                                <div className="exp-text">
-                                    EXP <span id="current-exp">{HomeData.exp.current}</span>/<span id="next-exp">{HomeData.exp.next}</span>    
-                                </div>
-                                <div className="exp-bar">
-                                    <div className="exp-fill"
-                                        id="exp-fill" 
-                                        data-width={HomeData.exp.percent} 
-                                        style={{ width: `${HomeData.exp.percent}%`}}>
+    <div className="home">
+        <div className="main">     
+            <div className="app">
+                <div className="left-column">
+                    <div className="card profile-box" id="profile-box">
+                        <div className="card-inner">
+                            <div className="card-content">
+                                <h3>PROFILE</h3>
+                                <div className="profile-main">
+                                    <div className="player-image"> 
+                                        
                                     </div>
-                                </div>     
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="card status-box" id="status-box">
-                    <div className="card-inner">
-                        <div className="card-content">
-                            <div id="status-list" className="status-list">
-                                <h3>STATUS</h3>
-                                <div id="status-hp" className="status-hp">
-                                    <span className="status-name">{HP.name}</span>
-                                    <div className="hp-bar">
-                                        <div className="hp-fill"></div>
+                                    <div className="user-name">
+                                        <div className="NAME">NAME</div> 
+                                        <div className="NAME-value">{HomeData.user.name}</div> 
                                     </div>
-                                    <span id="hp-value" className="hp-value">{HP.value}/{HP.value}</span>
-                                </div>
-                                <div id="status-mp" className="status-mp">
-                                    <span className="status-name">{MP.name}</span>
-                                    <div className="mp-bar">
-                                        <div className="mp-fill"></div>
+                                    <div className="job-name">
+                                        <div className="CLASS">CLASS</div>
+                                        <div className="CLASS-value">{HomeData.user.current_job_name ?? "なし"}</div>
                                     </div>
-                                    <span id="mp-value" className="mp-value">{MP.value}/{MP.value}</span>
                                 </div>
-
-                                {HomeData.status
-                                .filter(status =>
-                                    status.name !== "HP" &&
-                                    status.name !== "MP" 
-                                )
-                                .map((status) => {
-                                    const status_percent = Math.max(0,Math.min(status.value,100));
-                                    
-                                    return(
-                                        <div className="status-row" key={status.id}>
-                                            <div className="status-name">{status.name}</div>
-                                            <div className="status-bar">
-                                                <div className="status-fill" style={{ width: `${status_percent}%`}} ></div>
-                                            </div>
-                                            <div>
-                                                <span className="status-value">{status.value}</span>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="right-column">
-                <div id="stopwatch" className="card stopwatch-card">
-                    <div className="card-inner">
-                        <div className="card-content">
-                            <h3>STOP WATCH</h3>
-                            <h4 >{formatTime(DurationSeconds)}</h4>      
-                            <button 
-                            type="button" 
-                            className="btn" 
-                            onClick={timerButton} 
-                            disabled={user_categories.length===0}>
-                            <span>{IsRunning ? "STOP" : "START"}</span>
-                            </button>     
-                            <select 
-                            className="select-box"
-                            value={CategoryId}
-                            onChange={(e) => setCategoryId(e.target.value)}
-                            required>
                             
-                            {user_categories.map((category) =>(
-                                <option key={category.id} value={category.id}>
-                                    {category.name}
-                                </option>
-                            ))}
-                            </select>        
-                        </div>
-                    </div>
-                </div>
-          
-                <div className="card today-box">
-                    <div className="card-inner">
-                        <div className="card-content">
-                            <h3>TODAY</h3>
-                            <table>
-                                <thead>
-                                <tr>
-                                    <th>開始時刻</th>
-                                    <th>カテゴリー名</th>
-                                    <th>時間</th>
-                                </tr>
-                                </thead>
+                                <div className="lv-exp-card">
+                                    <div className="user-level">
+                                        <div className="LEVEL">Lv.<span className="LEVEL-value">{HomeData.user.level}</span>
+                                        </div>  
+                                    </div>  
+                                    <div className="level-up">LEVEL UP!!</div>   
+                        
 
-                                <tbody id="today-log-list">
-                                {HomeData.today_logs.map((log,index) => (
-                                <tr key={index}>
-                                  <td>{log.start_time}</td>
-                                  <td>{log.category_name}</td>
-                                  <td>{log.duration_seconds} 秒</td>
-                                </tr>  
-                                ))}
-                                </tbody>                          
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="card menu-box">
-                    <div className="card-inner">
-                        <h3>MENU</h3>
-                        <div className="menu-links">
-                          <Link to="/status">ステータス詳細</Link>
-                          <Link to="/category">カテゴリー設定</Link>
-                          <Link to="/history">活動履歴</Link>
-                        </div>
-                    </div>
-                </div>
-              
-                {HomeData.is_admin && (
-                    <div className="admin">
-                        <Link to="/admin">管理画面</Link>
-                    </div>
-                )}
-              
-                <button 
-                    className="logout-btn"
-                    onClick={() => setIsLogoutModalOpen(true)}
-                >
-                ログアウト
-                </button>
-                
-                {isLogoutModalOpen && (
-                    <div className="modal">
-                        <div className="modal-content">
-                            <h3>ログアウトしますか？</h3>
-
-                            <div className="modal-buttons">
-                                <button onClick={logout}>
-                                    はい
-                                </button>
-                                <button
-                                    onClick={() => setIsLogoutModalOpen(false)}
-                                >
-                                    キャンセル
-                                </button>
+                                    <div className="exp-text">
+                                        EXP <span id="current-exp">{HomeData.exp.current}</span>/<span id="next-exp">{HomeData.exp.next}</span>    
+                                    </div>
+                                    <div className="exp-bar">
+                                        <div className="exp-fill" 
+                                            data-width={HomeData.exp.percent} 
+                                            style={{ width: `${HomeData.exp.percent}%`}}>
+                                        </div>
+                                    </div>     
+                                </div>
                             </div>
                         </div>
                     </div>
-                )}
+
+                    <div className="card status-box" id="status-box">
+                        <div className="card-inner">
+                            <div className="card-content">
+                                <div id="status-list" className="status-list">
+                                    <h3>STATUS</h3>
+                                    <div id="status-hp" className="status-hp">
+                                        <span className="status-name">{HP.name}</span>
+                                        <div className="hp-bar">
+                                            <div className="hp-fill"></div>
+                                        </div>
+                                        <span id="hp-value" className="hp-value">{HP.value}/{HP.value}</span>
+                                    </div>
+                                    <div id="status-mp" className="status-mp">
+                                        <span className="status-name">{MP.name}</span>
+                                        <div className="mp-bar">
+                                            <div className="mp-fill"></div>
+                                        </div>
+                                        <span id="mp-value" className="mp-value">{MP.value}/{MP.value}</span>
+                                    </div>
+
+                                    {HomeData.user_statuses
+                                    .filter(status =>
+                                        status.name !== "HP" &&
+                                        status.name !== "MP" 
+                                    )
+                                    .map((status) => {
+                                        const status_percent = Math.max(0,Math.min(status.value,100));
+                                        
+                                        return(
+                                            <div className="status-row" key={status.id}>
+                                                <div className="status-name">{status.name}</div>
+                                                <div className="status-bar">
+                                                    <div className="status-fill" style={{ width: `${status_percent}%`}} ></div>
+                                                </div>
+                                                <div>
+                                                    <span className="status-value">{status.value}</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="right-column">
+                    <div id="stopwatch" className="card stopwatch-card">
+                        <div className="card-inner">
+                            <div className="card-content">
+                                <h3>STOP WATCH</h3>
+                                <h4 >{formatTime(DurationSeconds)}</h4>      
+                                <button 
+                                type="button" 
+                                className="btn" 
+                                onClick={timerButton} 
+                                disabled={user_categories.length===0}>
+                                <span>{IsRunning ? "STOP" : "START"}</span>
+                                </button>     
+                                <select 
+                                className="select-box"
+                                value={CategoryId}
+                                onChange={(e) => setCategoryId(e.target.value)}
+                                required>
+                                
+                                {user_categories.map((category) =>(
+                                    <option key={category.id} value={category.id}>
+                                        {category.name}
+                                    </option>
+                                ))}
+                                </select>        
+                            </div>
+                        </div>
+                    </div>
+            
+                    <div className="card today-box">
+                        <div className="card-inner">
+                            <div className="card-content">
+                                <h3>TODAY</h3>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>開始時刻</th>
+                                        <th>カテゴリー名</th>
+                                        <th>時間</th>
+                                    </tr>
+                                    </thead>
+
+                                    <tbody id="today-log-list">
+                                    {HomeData.today_logs.map((log,index) => (
+                                    <tr key={index}>
+                                    <td>{log.start_time}</td>
+                                    <td>{log.category_name}</td>
+                                    <td>{log.duration_seconds} 秒</td>
+                                    </tr>  
+                                    ))}
+                                    </tbody>                          
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card menu-box">
+                        <div className="card-inner">
+                            <h3>MENU</h3>
+                            <div className="menu-links">
+                            <Link to="/status">ステータス詳細</Link>
+                            <Link to="/category">カテゴリー設定</Link>
+                            <Link to="/history">活動履歴</Link>
+                            </div>
+                        </div>
+                    </div>
+                
+                    {HomeData.is_admin && (
+                        <div className="admin">
+                            <Link to="/admin">管理画面</Link>
+                        </div>
+                    )}
+                
+                    <button 
+                        className="logout-btn"
+                        onClick={() => setIsLogoutModalOpen(true)}
+                    >
+                    ログアウト
+                    </button>
+                    
+                    {isLogoutModalOpen && (
+                        <div className="modal">
+                            <div className="modal-content">
+                                <h3>ログアウトしますか？</h3>
+
+                                <div className="modal-buttons">
+                                    <button onClick={logout}>
+                                        はい
+                                    </button>
+                                    <button
+                                        onClick={() => setIsLogoutModalOpen(false)}
+                                    >
+                                        キャンセル
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div id="notification" className="notification"></div>     
             </div>
-            <div id="notification" className="notification"></div>     
         </div>
     </div>
   );

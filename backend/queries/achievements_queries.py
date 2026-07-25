@@ -1,15 +1,12 @@
 import sqlite3
 from flask import Flask
-import os
+from backend.config import DB_NAME
 
 from backend.queries.time_logs_queries import(
     get_category_summary,
 )
 
 app=Flask(__name__)
-
-BASE_DIR=os.path.dirname(os.path.abspath(__file__))
-DB_NAME=os.path.join(BASE_DIR,"rpg_table.db")
 
 def get_user_achievements(user_id):
     conn=sqlite3.connect(DB_NAME)

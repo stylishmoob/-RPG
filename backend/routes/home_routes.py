@@ -52,7 +52,7 @@ def api_home():
     "user": {
         "id": user["id"],
         "name": user["user_name"],
-        "job": user["current_job_name"],
+        "current_job_name": user["current_job_name"],
         "level": int(user_level),
     },
     "exp": {

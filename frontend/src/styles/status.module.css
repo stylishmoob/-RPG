@@ -1,4 +1,4 @@
-:root{
+:global(:root){
     
    
 
@@ -48,11 +48,11 @@
     --border-pixel:3px solid var(--purple-deep);
 }
 
-*{
+:global(*){
     box-sizing:border-box;
 }
 
-body{
+:global(body){
     color:var(--text-main);
     font-family:var(--font-main);
 
@@ -69,7 +69,7 @@ body{
 
 }
 
-h1{
+:global(h1){
     margin-left: 25px;
     grid-area:title;
     color:var(--text-title);
@@ -83,7 +83,7 @@ h1{
 
 }
 
-h2{
+:global(h2){
     
     color:var(--text-title);
     letter-spacing:0;
@@ -146,7 +146,7 @@ h2{
     clip-path: inherit;
 
 }
-.main-inner{
+.mainInner{
     position:absolute;
     z-index:3;
     
@@ -168,11 +168,11 @@ h2{
     "left right";
 }
 
-.main-inner > *{
+.mainInner > *{
     z-index:4;
 }
 
-.tab-menu{
+.tabMenu{
     margin-left: 10px;
     grid-area:left;
     display: flex;
@@ -187,7 +187,7 @@ h2{
 
 }
 
-.tab-button{
+.tabButton{
     width: 150px;
     height:70px;
     margin-left: 20px;
@@ -230,7 +230,7 @@ h2{
 
 }
 
-.tab-button::before{
+.tabButton::before{
     content:"";
     z-index:1;
     position: absolute;
@@ -248,7 +248,7 @@ h2{
 
 }
 
-.tab-button > *{
+.tabButton > *{
     z-index: 2;
 
     flex:1;
@@ -258,7 +258,7 @@ h2{
     
 }
 
-.tab-content{
+.tabContent{
     display: none;
     grid-area: right;
 
@@ -268,7 +268,7 @@ h2{
 
 
 
-.tab-content.active{
+.tabContent.active{
     display:block;
     
 }
@@ -336,7 +336,7 @@ h2{
     pointer-events: none;
 }
 
-.home-inner{
+.homeInner{
     position:absolute;
     inset:2px;
 
@@ -347,7 +347,7 @@ h2{
    
 }
 
-.home-inner::before{
+.homeInner::before{
     content:"";
     position:absolute;
     z-index:3;
@@ -364,7 +364,7 @@ h2{
    pointer-events: none;
 }
 
-.home-inner a{
+.homeInner a{
     position:relative;
     z-index:4;
     flex:1;
@@ -389,9 +389,9 @@ h2{
 
 }
 
-.profile-box,
-.status-box,
-.achievement-box{
+.profileBox,
+.statusBox,
+.achievementBox{
     width: 100%;
     height: 100%;
 
@@ -415,9 +415,9 @@ h2{
     box-shadow:0 8px 24px rgba(0,0,0,.2);
 
 }
-.profile-box::before,
-.status-box::before,
-.achievement-box::before{
+.profileBox::before,
+.statusBox::before,
+.achievementBox::before{
     content:"";
     z-index: 1;
     position: absolute;
@@ -433,9 +433,9 @@ h2{
 
 }
 
-.profile-box::after,
-.status-box::after,
-.achievement-box::after{
+.profileBox::after,
+.statusBox::after,
+.achievementBox::after{
     content:"";
     z-index: 2;
     position:absolute;
@@ -446,7 +446,7 @@ h2{
     clip-path: inherit;
 }
 
-.card-inner{
+.cardInner{
     z-index: 3;
     position: absolute;
 
@@ -461,7 +461,7 @@ h2{
 
 }
 
-.profile-main{
+.profileMain{
     display:grid;
     gap:10px;
     grid-template-columns: 300px 1fr;
@@ -474,7 +474,7 @@ h2{
         ;
 }
 
-.player-image{
+.playerImage{
     grid-area: image;
     width:300px;
     height:300px;
@@ -489,7 +489,7 @@ h2{
     align-items:center;
 }
 
-.user-name{
+.userName{
     grid-area: name;
     text-align: left;
     margin-top: auto;
@@ -499,7 +499,7 @@ h2{
     letter-spacing: 1px;
 }
 
-.job-name{
+.jobName{
     grid-area: job;
     text-align: left;
     margin-top: auto;
@@ -509,8 +509,8 @@ h2{
     letter-spacing: 1px;
 }
 
-.NAME,
-.CLASS{
+.nameLabel,
+.classLabel{
     position:relative;
     isolation:isolate;
     z-index:0;
@@ -518,10 +518,10 @@ h2{
     font-family: 500;
 }
 
-.NAME::after,
-.CLASS::after,
-.NAME-value::after,
-.CLASS-value::after{
+.nameLabel::after,
+.classLabel::after,
+.nameValue::after,
+.classValue::after{
     content:"";
     z-index:1;
     position:absolute;
@@ -536,8 +536,8 @@ h2{
     opacity:0.2;
 }
 
-.NAME-value,
-.CLASS-value{
+.nameValue,
+.classValue{
     position:relative;
     isolation:isolate;
     z-index:0;
@@ -546,7 +546,7 @@ h2{
 }
 
 /* EXP */
-.lv-exp-card{
+.lvExpCard{
     grid:exp;
     display:grid;
     gap:0px;
@@ -561,7 +561,7 @@ h2{
 
 }
 
-.user-level{
+.userLevel{
     grid-area:level;
     margin-left:10px;
     text-align: left;
@@ -571,13 +571,13 @@ h2{
     letter-spacing: 4px;
 }
 
-.LEVEL{
+.levelLabel{
     font-size:40px;
     font-family: 700;
     letter-spacing: 4px;
 }
 
-.exp-text{
+.expText{
     margin-top:24px;
     grid-area:exptext;
     color:var(--text-main);
@@ -590,7 +590,7 @@ h2{
     letter-spacing: 2px;
 }
 
-.exp-bar{
+.expBar{
     grid-area:expbar;
     width:100%;
     height:20px;
@@ -620,7 +620,7 @@ h2{
         inset 0 3px 0 rgba(48,32,79,.12);
         
 }
-.exp-bar::before{
+.expBar::before{
     content:"";
     z-index: 1;
     position: absolute;
@@ -635,7 +635,7 @@ h2{
 
 }
 
-.exp-fill{
+.expFill{
     z-index:2;
     position:relative;
     height:100%;
@@ -655,9 +655,9 @@ h2{
 }
 
 /* Status */
-.status-hp,
-.status-mp,
-.status-row{
+.statusHp,
+.statusMp,
+.statusRow{
     display:grid;
     
     align-items:center;
@@ -665,9 +665,9 @@ h2{
     min-height:30px;
 }
 
-.hp-bar,
-.mp-bar,
-.status-bar{
+.hpBar,
+.mpBar,
+.statusBar{
     position:relative;
     width:100%;
     overflow:hidden;
@@ -679,18 +679,18 @@ h2{
         0 2px 4px rgba(0,0,0,.08);
 }
 
-.hp-bar,
-.mp-bar{
+.hpBar,
+.mpBar{
     height:18px;
 }
 
-.status-bar{
+.statusBar{
     height:11px;
 }
 
-.hp-fill,
-.mp-fill,
-.status-fill{
+.hpFill,
+.mpFill,
+.statusFill{
     position:relative;
     width:100%;
     height:100%;
@@ -700,21 +700,21 @@ h2{
         inset 0 -2px 3px rgba(0,0,0,.15);
 }
 
-.hp-fill{
+.hpFill{
     background:linear-gradient(90deg,#8BF28F,var(--green));
 }
 
-.mp-fill{
+.mpFill{
     background:linear-gradient(90deg,#74D9FF,var(--blue));
 }
 
-.status-fill{
+.statusFill{
     background:linear-gradient(90deg,#C5B2FF,#8F6CFF);
 }
 
-.hp-fill::after,
-.mp-fill::after,
-.status-fill::after{
+.hpFill::after,
+.mpFill::after,
+.statusFill::after{
     content:"";
     position:absolute;
     top:0;
@@ -725,14 +725,14 @@ h2{
     border-radius:var(--radius-pill);
 }
 
-.status-name{
+.statusName{
     min-width:0;
     color: #020005;
     font-weight:900;
     text-align:right;
 }
 
-.status-value{
+.statusValue{
     color:#020005;
     font-weight:900;
     text-align:center;
@@ -751,8 +751,8 @@ h2{
 }
 
 
-.tab-button:hover,
-.home-inner a:hover{
+.tabButton:hover,
+.homeInner a:hover{
     background:linear-gradient(
         135deg,
         var(--bg-tab-hover),
@@ -777,16 +777,16 @@ h2{
         padding:20px 12px;
     }
 
-    .status-box,
-    .achievement-box{
+    .statusBox,
+    .achievementBox{
         padding:20px 16px;
     }
 
-    .status-box div{
+    .statusBox div{
         font-size:16px;
     }
 
-    a{
+    :global(a){
         width:100%;
     }
 }

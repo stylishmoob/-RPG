@@ -1,6 +1,7 @@
 export type UserType = {
     id: number;
     name: string;
+    current_job_name: string;
     level: string;
 };
 
@@ -45,6 +46,18 @@ export type MasterCategoriesType = {
     is_active:boolean;
 };
 
+export type HomeDataType = {
+    success: boolean;
+    user: UserType;
+    exp: ExpType;
+    user_jobs: JobType[];
+    user_statuses: StatusType[];
+    user_achievements: AchievementType[];
+    user_categories: CategoryType[];
+    today_logs: TodayLogType[];
+    is_admin: boolean;
+};
+
 export type categorySummaryType = {
     category_id: string;
     category_name: string;
@@ -58,17 +71,7 @@ export type dailyCategorySummaryType = {
     daily_total_seconds: number;
 };
 
-export type HomeDataType = {
-    success: boolean;
-    user: UserType;
-    exp: ExpType;
-    job: JobType;
-    status: StatusType[];
-    achievements: AchievementType[];
-    categories: CategoryType[];
-    today_logs: TodayLogType[];
-    is_admin: boolean;
-};
+
 
 export type savedataType = {
     category_id: string;
@@ -120,6 +123,7 @@ export type StatusesType ={
     id:string;
     name:string;
     type:StatusTypeType;
+    default_value:string;
     isActive:boolean;
 }
 

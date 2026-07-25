@@ -27,6 +27,7 @@ def api_admin_statuses():
             "id":row["id"],
             "name":row["status_name"],
             "type":row["status_type"],
+            "default_value":row["default_value"],
             "isActive":row["is_active"]
             }
             for row in master_statuses
@@ -36,10 +37,13 @@ def api_admin_statuses():
 @admin_status_bp.post("/add")
 @admin_required
 def api_admin_add_status():
-    status_name=request.form["status_name"]
-    status_type=request.form["status_type"]
+    data=request.get_json()
 
-    add_master_status(status_name,status_type)
+    status_name=data["status_name"]
+    default_value=data["default_value"]
+    status_type=data["status_type"]
+
+    add_master_status(status_name,default_value,status_type)
 
     return jsonify({
         "success":True
@@ -52,10 +56,15 @@ def api_admin_edit_status():
 
     status_id=data["status_id"]
     status_name=data["status_name"]
+    default_value=data["default_value"]
     status_type=data["status_type"]
     is_active=data["status_is_active"]
 
-    edit_master_status(status_id,status_name,status_type,is_active)
+    edit_master_status(status_id,
+                       status_name,
+                       default_value,
+                       status_type,
+                       is_active)
     
     return jsonify({
         "success":True

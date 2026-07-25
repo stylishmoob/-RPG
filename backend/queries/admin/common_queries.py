@@ -1,14 +1,7 @@
-import sqlite3
 from flask import Flask
-import os
-import csv
-import io
+from backend.config import DB_NAME
 
 app=Flask(__name__)
-
-BASE_DIR=os.path.dirname(os.path.abspath(__file__))
-DB_NAME=os.path.join(BASE_DIR,"rpg_table.db")
-
 
 def insert_default_category_achievements(cur,category_id,category_name):
     DEFAULT_CATEGORY_ACHIEVEMENTS = [

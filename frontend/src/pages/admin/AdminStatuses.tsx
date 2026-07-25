@@ -10,11 +10,15 @@ function AdminStatuses(){
 
     const [addStatusName,setAddStatusName] = useState<string>("");
 
+    const [addStatusDefaultValue,setAddStatusDefaultValue] = useState<string>("");
+
     const [addStatusType,setAddStatusType] = useState<"front" | "back">("front");
 
     const [editStatusName,setEditStatusName] = useState<string>("");
 
     const [editStatusType,setEditStatusType] = useState<"front" | "back">("front");
+
+    const [editStatusDefaultValue,setEditStatusDefaultValue] = useState<string>("");
 
     const [editStatusIsActive,setEditStatusIsActive] = useState<boolean>(true);
 
@@ -85,12 +89,19 @@ function AdminStatuses(){
         if(editingId === "") return;
        
         try{
-            await handleEdit(editingId,editStatusName,editStatusType,editStatusIsActive);
+            await handleEdit(
+                editingId,
+                editStatusName,
+                editStatusDefaultValue,
+                editStatusType,
+                editStatusIsActive
+            );
             await fetchStatusesData();
 
             setEditingId("");
             setEditStatusName("");
             setEditStatusType("front");
+            setEditStatusDefaultValue("");
             setEditStatusIsActive(true);
         }catch(error){
             console.error(error);
@@ -100,6 +111,7 @@ function AdminStatuses(){
     async function handleEdit(
         editingId:string,
         editStatusName:string,
+        editStatusDefaultValue:string,
         editStatusType:string,
         editStatusIsActive:boolean
         )
@@ -112,6 +124,7 @@ function AdminStatuses(){
             body:JSON.stringify({
                 "status_id":editingId,
                 "status_name":editStatusName,
+                "default_value":editStatusDefaultValue,
                 "status_type":editStatusType,
                 "status_is_active":editStatusIsActive,
         }),
@@ -126,6 +139,7 @@ function AdminStatuses(){
     function startEditing(status:StatusesType){
         setEditingId(status.id);
         setEditStatusName(status.name);
+        setEditStatusDefaultValue(status.default_value);
         setEditStatusType(status.type);
         setEditStatusIsActive(status.isActive);
     }
@@ -169,6 +183,14 @@ function AdminStatuses(){
                     placeholder="ステータス名" 
                     required
                 />
+                <input 
+                    type="text" 
+                    value={addStatusDefaultValue} 
+                    onChange={(e) => setAddStatusDefaultValue(e.target.value)}
+                    placeholder="デフォルト値" 
+                    required
+                />
+
                 <select 
                     value={addStatusType}
                     onChange={(e) => setAddStatusType(e.target.value as "front" | "back")}>
@@ -195,6 +217,7 @@ function AdminStatuses(){
                 <tr>
                     <th>ID</th>
                     <th>ステータス名</th>
+                    <th>デフォルト値</th>
                     <th>ステータスタイプ</th>
                     <th>有効・無効</th>
                 </tr>
@@ -206,14 +229,22 @@ function AdminStatuses(){
                             className={editingId === status.id ? "editing-row" :""}
                         >
                         <td>{status.id}</td>
-                        <td>
-                            <div>{status.name}</div>    
+                        <td>   
                             <input 
                             type="text" 
                             value={editStatusName}
                             disabled={editingId !== status.id}
                             onChange={(e) => setEditStatusName(e.target.value)}
                             placeholder="ステータス名"
+                            />
+                        </td>
+                        <td>
+                            <input 
+                            type="text" 
+                            value={editStatusDefaultValue}
+                            disabled={editingId !== status.id}
+                            onChange={(e) => setEditStatusDefaultValue(e.target.value)}
+                            placeholder="デフォルト値"
                             />
                         </td>
                         <td>

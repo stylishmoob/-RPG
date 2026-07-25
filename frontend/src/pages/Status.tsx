@@ -1,7 +1,7 @@
 import { useState,useEffect } from "react";
 import { Link,useNavigate } from "react-router-dom";
 import type { StatusDataType } from "../types/api";
-
+import styles from "../styles/status.module.css";
 
 function Status() {
     const [StatusData,setStatusData] = useState<StatusDataType | null>(null);
@@ -46,13 +46,13 @@ function Status() {
     }   
 
     return (
-        <div className="main">
-            <div className="main-inner">
+        <div className={styles.main}>
+            <div className={styles.mainInner}>
                 <h1>ステータス</h1>
-                <div className="tab-menu">
+                <div className={styles.tabMenu}>
                     <button 
                         className=
-                            {`tab-button ${activeTab === "profile" ? "active" : ""}`} 
+                            {`${styles.tabButton} ${activeTab === "profile" ? styles.active : ""}`} 
                         data-tab="profile-box"
                         onClick={() => setActiveTab("profile")}
                     >
@@ -61,7 +61,7 @@ function Status() {
 
                     <button 
                         className=
-                            {`tab-button ${activeTab === "status" ? "active" : ""}`} 
+                            {`${styles.tabButton} ${activeTab === "status" ? styles.active : ""}`} 
                         data-tab="status-box"
                          onClick={() => setActiveTab("status")}
                     >
@@ -70,48 +70,48 @@ function Status() {
 
                     <button 
                         className=
-                            {`tab-button ${activeTab === "achievement" ? "active" : ""}`} 
-                        data-tab="status-box"
+                            {`${styles.tabButton} ${activeTab === "achievement" ? styles.active : ""}`} 
+                        data-tab="achievement-box"
                          onClick={() => setActiveTab("achievement")}>
                         <h2>勲章・称号</h2>
                     </button>
 
-                    <div className="home">
-                        <div className="home-inner">
+                    <div className={styles.home}>
+                        <div className={styles.homeInner}>
                             <Link to="/">ホームへ</Link>
                         </div>
                     </div>
                 </div>
                 {activeTab === "profile" && (
-                <div className="tab-content active" id="profile-box">
-                    <div className="profile-box">
-                        <div className="card-inner">
-                            <div className="profile-main">
-                                <div className="player-image"> 
+                <div className={[styles.tabContent, styles.active].join(" ")} id="profile-box">
+                    <div className={styles.profileBox}>
+                        <div className={styles.cardInner}>
+                            <div className={styles.profileMain}>
+                                <div className={styles.playerImage}> 
                                     {/* <img src="player.png"> */}
                                 </div>
-                                <div className="user-name">
-                                    <div className="NAME">NAME</div> 
-                                    <div className="NAME-value">{user.name}</div> 
+                                <div className={styles.userName}>
+                                    <div className={styles.nameLabel}>NAME</div> 
+                                    <div className={styles.nameValue}>{user.name}</div> 
                                 </div>
-                                <div className="job-name">
-                                    <div className="CLASS">CLASS</div>
-                                    <div className="CLASS-value">{job.name ?? "なし"}</div>
+                                <div className={styles.jobName}>
+                                    <div className={styles.classLabel}>CLASS</div>
+                                    <div className={styles.classValue}>{job.name ?? "なし"}</div>
                                 </div>
                             </div>
                         
-                            <div className="lv-exp-card">
-                                <div className="user-level">
-                                    <div className="LEVEL">Lv.<span className="LEVEL-value">{user.level}</span>
+                            <div className={styles.lvExpCard}>
+                                <div className={styles.userLevel}>
+                                    <div className={styles.levelLabel}>Lv.<span className={styles.levelValue}>{user.level}</span>
                                     </div>  
                                 </div>  
-                                <div className="level-up">LEVEL UP!!</div>   
+                                <div className={styles.levelUp}>LEVEL UP!!</div>   
                 
-                                <div className="exp-text">
+                                <div className={styles.expText}>
                                     EXP <span id="current-exp">{exp.current}</span>/<span id="next-exp">{exp.next}</span>    
                                 </div>
-                                <div className="exp-bar">
-                                    <div className="exp-fill"
+                                <div className={styles.expBar}>
+                                    <div className={styles.expFill}
                                         id="exp-fill" 
                                         data-width={exp.percent}
                                         style={{width: `${exp.percent}%` }}>
@@ -120,43 +120,43 @@ function Status() {
                             </div>
 
     
-                            <div id="status-hp" className="status-hp">
-                                <span className="status-name">{HP.name}</span>
-                                <div className="hp-bar">
-                                    <div className="hp-fill"></div>
+                            <div id="status-hp" className={styles.statusHp}>
+                                <span className={styles.statusName}>{HP.name}</span>
+                                <div className={styles.hpBar}>
+                                    <div className={styles.hpFill}></div>
                                 </div>
-                                <span id="hp-value" className="hp-value">{HP.value}/{HP.value}</span>
+                                <span id="hp-value" className={styles.hpValue}>{HP.value}/{HP.value}</span>
                             </div>
-                            <div id="status-mp" className="status-mp">
-                                <span className="status-name">{MP.name}</span>
-                                <div className="mp-bar">
-                                    <div className="mp-fill"></div>
+                            <div id="status-mp" className={styles.statusMp}>
+                                <span className={styles.statusName}>{MP.name}</span>
+                                <div className={styles.mpBar}>
+                                    <div className={styles.mpFill}></div>
                                 </div>
-                                <span id="mp-value" className="mp-value">{MP.value}/{MP.value}</span>
+                                <span id="mp-value" className={styles.mpValue}>{MP.value}/{MP.value}</span>
                             </div>
                         </div>
                     </div>
                 </div>
                     )}
 
-                {activeTab === "profile" && (
-                <div className="tab-content" id="status-box">
-                    <div className="status-box">
-                        <div className="card-inner">
-                            <div id="status-list" className="status-list">
-                                <div id="status-hp" className="status-hp">
-                                    <span className="status-name">{HP.name}</span>
-                                    <div className="hp-bar">
-                                        <div className="hp-fill"></div>
+                {activeTab === "status" && (
+                <div className={[styles.tabContent, styles.active].join(" ")} id="status-box">
+                    <div className={styles.statusBox}>
+                        <div className={styles.cardInner}>
+                            <div id="status-list" className={styles.statusList}>
+                                <div id="status-hp" className={styles.statusHp}>
+                                    <span className={styles.statusName}>{HP.name}</span>
+                                    <div className={styles.hpBar}>
+                                        <div className={styles.hpFill}></div>
                                     </div>
-                                    <span id="hp-value" className="hp-value">{HP.value}/{HP.value}</span>
+                                    <span id="hp-value" className={styles.hpValue}>{HP.value}/{HP.value}</span>
                                 </div>
-                                <div id="status-mp" className="status-mp">
-                                    <span className="status-name">{MP.name}</span>
-                                    <div className="mp-bar">
-                                        <div className="mp-fill"></div>
+                                <div id="status-mp" className={styles.statusMp}>
+                                    <span className={styles.statusName}>{MP.name}</span>
+                                    <div className={styles.mpBar}>
+                                        <div className={styles.mpFill}></div>
                                     </div>
-                                    <span id="mp-value" className="mp-value">{MP.value}/{MP.value}</span>
+                                    <span id="mp-value" className={styles.mpValue}>{MP.value}/{MP.value}</span>
                                 </div>
 
                                 {status.filter(s =>
@@ -169,13 +169,13 @@ function Status() {
                                     
                                     
                                     return(
-                                            <div className="status-row" key={s.id}>
-                                                <div className="status-name">{s.name}</div>
-                                                <div className="status-bar">
-                                                    <div className="status-fill" style={{ width: `${status_percent}%`}} ></div>
+                                            <div className={styles.statusRow} key={s.id}>
+                                                <div className={styles.statusName}>{s.name}</div>
+                                                <div className={styles.statusBar}>
+                                                    <div className={styles.statusFill} style={{ width: `${status_percent}%`}} ></div>
                                                 </div>
                                                 <div>
-                                                    <span className="status-value">{s.value}</span>
+                                                    <span className={styles.statusValue}>{s.value}</span>
                                                 </div>
                                             </div>    
                                     );
@@ -186,12 +186,12 @@ function Status() {
                         </div>
                     </div>
                 </div>
-                )};
+                )}
                 
-                {activeTab === "profile" && (
-                <div className="tab-content" id="achievement-box">
-                    <div className="achievement-box">
-                        <div className="card-inner">
+                {activeTab === "achievement" && (
+                <div className={[styles.tabContent, styles.active].join(" ")} id="achievement-box">
+                    <div className={styles.achievementBox}>
+                        <div className={styles.cardInner}>
                             {achievements.map((achievement,index) => {
 
                                 return(
@@ -205,9 +205,10 @@ function Status() {
                         </div>
                     </div>
                 </div>
-                )};
+                )}
             </div>
         </div> 
+
     )
 };                               
                                   

@@ -3,7 +3,7 @@ import { Link,useNavigate } from "react-router-dom";
 
 import type { CategoryDataType} from "../types/api";
 
-import "../styles/category.css";
+import styles from "../styles/category.module.css";
 
 function Category() {
     const [categoryData,setCategoryData] = useState<CategoryDataType | null>(null);
@@ -93,68 +93,78 @@ function Category() {
         }
 
     return (
-        <div className="page">
-            <div className="category-main">
+        <div className={styles.page}>
+            <div className={styles.categoryMain}>
                 <h1>カテゴリー管理</h1>
-                <div className="category-left">
-                    <div className="category-left-inner">
+
+                <div className={styles.categoryLeft}>
+                    <div className={styles.categoryLeftInner}>
                         <h2>カテゴリー一覧</h2>
-                        <div className="category-all">
-                            <div className="category-all-inner">
+
+                        <div className={styles.categoryAll}>
+                            <div className={styles.categoryAllInner}>
                                 <table>
-                                    {user_categories.map((category) => (
-                                    <tr key={category.id}>
-                                        <td>{category.name}</td>
-                                        <td>  
-                                            <button 
-                                                className="delete-button" 
-                                                onClick={() => deleteCategory(category.id)}
-                                            >
-                                                削除
-                                            </button>                              
-                                        </td>
-                                    </tr>
-                                    ))}
+                                    <tbody>
+                                        {user_categories.map((category) => (
+                                            <tr key={category.id}>
+                                                <td>{category.name}</td>
+                                                <td>
+                                                    <button
+                                                        className={styles.deleteButton}
+                                                        onClick={() =>
+                                                            deleteCategory(category.id)
+                                                        }
+                                                    >
+                                                        削除
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
                 </div>
-                            
-                <div className="category-right">
-                    <div className="category-right-inner">
+
+                <div className={styles.categoryRight}>
+                    <div className={styles.categoryRightInner}>
                         <h2>カテゴリー追加</h2>
-                        <div className="category-add">
-                            <div className="category-add-inner">
-                                
-                                <select 
+
+                        <div className={styles.categoryAdd}>
+                            <div className={styles.categoryAddInner}>
+                                <select
                                     value={selectedCategoryId}
-                                    onChange={(e) => setSelectedCategoryId(e.target.value)}
+                                    onChange={(e) =>
+                                        setSelectedCategoryId(e.target.value)
+                                    }
                                 >
-                                    {master_categories.map((master_category) =>(
-                                        <option 
-                                            key={master_category.id}
-                                            value={String(master_category.id)}
+                                    {master_categories.map((masterCategory) => (
+                                        <option
+                                            key={masterCategory.id}
+                                            value={String(masterCategory.id)}
                                         >
-                                            {master_category.name}
+                                            {masterCategory.name}
                                         </option>
                                     ))}
-                                    </select>
-                                    <button 
-                                        className="add-button" 
-                                        disabled={selectedCategoryId === ""}
-                                        onClick={() => addCategory(selectedCategoryId)}
-                                        >
-                                            追加
-                                    </button>
-                                    
+                                </select>
+
+                                <button
+                                    className={styles.addButton}
+                                    disabled={selectedCategoryId === ""}
+                                    onClick={() =>
+                                        addCategory(selectedCategoryId)
+                                    }
+                                >
+                                    追加
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="home">
-                    <div className="home-inner">
+                <div className={styles.categoryHome}>
+                    <div className={styles.categoryHomeInner}>
                         <Link to="/">ホームへ</Link>
                     </div>
                 </div>
