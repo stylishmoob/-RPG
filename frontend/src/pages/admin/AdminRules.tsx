@@ -1,6 +1,7 @@
 import { useEffect,useState} from "react"
 import { useNavigate } from "react-router-dom";
 import type { StatusRulesDataType,StatusRulesType } from "../../types/api";
+import styles from "../../styles/admin/AdminRules.module.css";
 
 
 function AdminRules(){
@@ -176,9 +177,9 @@ function AdminRules(){
         
     
     return(
-        <div>
-            <h2>ステータス上昇ルール管理</h2>
-            <form onSubmit={addHandleSubmit}>
+        <div className={styles.page}>
+            <h2 className={styles.title}>ステータス上昇ルール管理</h2>
+            <form className={styles.form} onSubmit={addHandleSubmit}>
                 <select 
                     value={addCategoryId}
                     onChange={(e) => setAddCategoryId(e.target.value)}>
@@ -212,7 +213,7 @@ function AdminRules(){
                 <button type="submit">追加</button>
             </form>
 
-            <form onSubmit={importCsvSubmit}>
+            <form className={styles.form} onSubmit={importCsvSubmit}>
                 <input
                     type="file"
                     accept=".csv,text/csv"
@@ -225,17 +226,23 @@ function AdminRules(){
                 </button>
             </form>
 
-            <table>
-                <tr>
-                    <th>ID</th>
-                    <th>カテゴリー名</th>
-                    <th>ステータス名</th>
-                    <th>上昇量/h</th>
-                    <th>有効化・無効化</th>
-                </tr>
-                {statusRules.map((statusRule) => {
+            <table className={styles.table}>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>カテゴリー名</th>
+                        <th>ステータス名</th>
+                        <th>上昇量/h</th>
+                        <th>有効化・無効化</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {statusRules.map((statusRule) => {
                     return(
-                            <tr key={statusRule.id}>
+                            <tr
+                                key={statusRule.id}
+                                className={editingId === statusRule.id ? styles.editingRow : ""}
+                            >
                                 <td>{statusRule.id}</td>
                                 <td>
                                     <div>{statusRule.category_name}</div>
@@ -313,7 +320,8 @@ function AdminRules(){
                                 </td>
                             </tr>
                     )
-                })}
+                    })}
+                </tbody>
             </table>
         </div>
 

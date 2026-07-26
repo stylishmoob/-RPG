@@ -21,6 +21,7 @@ def api_login():
 
     if user and check_password_hash(user["password_hash"],password):
         session["user_id"] = user["id"]
+        session["is_admin"] = user["is_admin"]
 
         return jsonify({
             "success":True

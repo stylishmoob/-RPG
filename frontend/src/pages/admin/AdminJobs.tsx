@@ -1,6 +1,7 @@
 import { useEffect,useState,Fragment} from "react"
 import { useNavigate } from "react-router-dom";
 import type { Requirements,editRequirements,JobsType,JobsDataType, JobRequirementsType } from "../../types/api";
+import styles from "../../styles/admin/AdminJobs.module.css";
 
 function AdminJobs(){
     const[jobsData,setJobsData] = useState<JobsDataType | null>(null);
@@ -216,9 +217,9 @@ function AdminJobs(){
 
 
     return(
-        <div>
-            <h2>職業管理</h2>
-            <form onSubmit={addHandleSubmit}>
+        <div className={styles.page}>
+            <h2 className={styles.title}>職業管理</h2>
+            <form className={styles.form} onSubmit={addHandleSubmit}>
                 <input 
                     type="text" 
                     value={addJobName} 
@@ -227,7 +228,7 @@ function AdminJobs(){
                     required
                 />
                 {addRequirements.map((requirement,index) => (
-                    <div key={index}>
+                    <div className={styles.requirementRow} key={index}>
                         <select
                             value={requirement.statusId}
                             onChange={(e) => {
@@ -274,7 +275,7 @@ function AdminJobs(){
                 <button type="submit">追加</button>
             </form>
 
-            <form onSubmit={importCsvSubmit}>
+            <form className={styles.form} onSubmit={importCsvSubmit}>
                 <input
                     type="file"
                     accept=".csv,text/csv"
@@ -287,21 +288,23 @@ function AdminJobs(){
                 </button>
             </form>
 
-            <table>
-                <tr>
-                    <th>ID</th>
-                    <th>職業名</th>
-                    <th>必要ステータス</th>
-                    <th>有効・無効</th>
-                    <th>デフォルト</th>
-                </tr>
+            <table className={styles.table}>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>職業名</th>
+                        <th>必要ステータス</th>
+                        <th>有効・無効</th>
+                        <th>デフォルト</th>
+                    </tr>
+                </thead>
 
-                {masterJobs.map((job) => {
+                <tbody>
+                    {masterJobs.map((job) => {
                     return(
                         <Fragment key={job.id}>
                         <tr
-                            key={job.id}
-                            className={editingId === job.id ? "editing-row" :""}
+                            className={editingId === job.id ? styles.editingRow : ""}
                             onClick={() => setSelectJobId(job.id)}
                         >
                             <td>{job.id}</td>
@@ -458,8 +461,8 @@ function AdminJobs(){
                         )}
                         </Fragment>
                     )
-                })}
-                
+                    })}
+                </tbody>
             </table>
         </div>
     )

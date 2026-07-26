@@ -2,6 +2,7 @@ import { useEffect,useState} from "react"
 import { useNavigate } from "react-router-dom";
 
 import type { MasterCategoriesType,MasterCategoriesDataType } from "../../types/api";
+import styles from "../../styles/admin/AdminCategories.module.css";
 
 function AdminCategories(){
     const [MasterCategoriesData,setMasterCategoriesData] = useState<MasterCategoriesDataType | null>(null); 
@@ -146,10 +147,10 @@ function AdminCategories(){
     
 
     return(
-        <div>
-            <h2>カテゴリー管理</h2>
+        <div className={styles.page}>
+            <h2 className={styles.title}>カテゴリー管理</h2>
 
-            <form onSubmit={addHandleSubmit}>
+            <form className={styles.form} onSubmit={addHandleSubmit}>
                 <input 
                     type="text" 
                     value={addCategoryName} 
@@ -160,7 +161,7 @@ function AdminCategories(){
                 <button type="submit">追加</button>
             </form>
 
-            <form onSubmit={importCsvSubmit}>
+            <form className={styles.form} onSubmit={importCsvSubmit}>
                 <input
                     type="file"
                     accept=".csv,text/csv"
@@ -173,18 +174,21 @@ function AdminCategories(){
                 </button>
             </form>
 
-            <table>
-                <tr>
-                    <th>ID</th>
-                    <th>カテゴリー名</th>
-                    <th>有効化・無効化</th>
-                </tr>
+            <table className={styles.table}>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>カテゴリー名</th>
+                        <th>有効化・無効化</th>
+                    </tr>
+                </thead>
 
-                {MasterCategories.map((category) => {
+                <tbody>
+                    {MasterCategories.map((category) => {
 
                     return(
                         <tr key={category.id}
-                            className={editingId === category.id ? "editing-row" :""}
+                            className={editingId === category.id ? styles.editingRow : ""}
                         >
                             <td>{category.id}</td>
                             <td>
@@ -231,7 +235,8 @@ function AdminCategories(){
                             </td>
                         </tr>
                     )
-                })}
+                    })}
+                </tbody>
             </table>
         </div>
 

@@ -1,17 +1,20 @@
 import { NavLink,Outlet } from "react-router-dom"
+import styles from "../../styles/admin/AdminLayout.module.css";
 
 function AdminLayout(){
     return(
-        <div>
-            <nav>
-            <NavLink to="categories">カテゴリー</NavLink>
-            <NavLink to="statuses">ステータス</NavLink>
-            <NavLink to="jobs">職業</NavLink>
-            <NavLink to="achievements">実績</NavLink>
-            <NavLink to="rules">ルール</NavLink>
-            <NavLink to="/">ホーム</NavLink>
+        <div className={styles.layout}>
+            <nav className={styles.nav}>
+            <NavLink className={styles.link} to="categories">カテゴリー</NavLink>
+            <NavLink className={styles.link} to="statuses">ステータス</NavLink>
+            <NavLink className={styles.link} to="jobs">職業</NavLink>
+            <NavLink className={styles.link} to="achievements">実績</NavLink>
+            <NavLink className={styles.link} to="rules">ルール</NavLink>
+            <NavLink className={styles.link} to="/">ホーム</NavLink>
             </nav>
-            <Outlet />
+            <main className={styles.content}>
+                <Outlet />
+            </main>
         </div>
     )
 }

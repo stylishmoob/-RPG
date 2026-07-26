@@ -2,7 +2,7 @@ import{ useState,useRef,useEffect } from "react";
 import { Link,useNavigate } from "react-router-dom";
 import Chart from "Chart.js/auto";
 import type { PeriodType,UnitType,HistoryDataType } from "../types/api";
-import "../styles/history.css";
+import styles from "../styles/history.module.css";
 
 const unitLabels ={
         seconds: "活動時間(秒)",
@@ -130,14 +130,15 @@ function History() {
     }
 
     return (
-        <div className="main">
-            <div className="maininner">
-                <div className="card">
+        <div className={styles.main}>
+            <div className={styles.mainInner}>
+                <div className={styles.card}>
                     <h2>カテゴリー別活動時間</h2>
+
                     <canvas ref={categoryChartRef}></canvas>
-                    
-                    <select 
-                        className="ctx1_period" 
+
+                    <select
+                        className={styles.ctx1Period}
                         onChange={(e) =>
                             setCtx1Period(e.target.value as PeriodType)
                         }
@@ -150,8 +151,8 @@ function History() {
                         <option value="year">今年</option>
                     </select>
 
-                    <select 
-                        className="ctx1_unit" 
+                    <select
+                        className={styles.ctx1Unit}
                         onChange={(e) =>
                             setCtx1Unit(e.target.value as UnitType)
                         }
@@ -159,16 +160,18 @@ function History() {
                         <option value="seconds">秒</option>
                         <option value="minutes">分</option>
                         <option value="hours">時間</option>
-                    </select> 
+                    </select>
                 </div>
-                <div className="card">
+
+                <div className={styles.card}>
                     <h2>日別活動時間</h2>
+
                     <canvas ref={dailyCategoryChartRef}></canvas>
-                    
-                    <select 
-                        className="ctx2_period" 
+
+                    <select
+                        className={styles.ctx2Period}
                         onChange={(e) =>
-                        setCtx2Period(e.target.value as PeriodType)
+                            setCtx2Period(e.target.value as PeriodType)
                         }
                     >
                         <option value="all">全期間</option>
@@ -178,10 +181,10 @@ function History() {
                         <option value="year">今年</option>
                     </select>
 
-                    <select 
-                        className="ctx2_unit" 
+                    <select
+                        className={styles.ctx2Unit}
                         onChange={(e) =>
-                        setCtx2Unit(e.target.value as UnitType)
+                            setCtx2Unit(e.target.value as UnitType)
                         }
                     >
                         <option value="seconds">秒</option>
@@ -189,8 +192,11 @@ function History() {
                         <option value="hours">時間</option>
                     </select>
                 </div>
-                <div className="link">
-                    <Link to="/">ホームへ</Link>
+
+                <div className={styles.historyHome}>
+                    <div className={styles.historyHomeInner}>
+                        <Link to="/">ホームへ</Link>
+                    </div>
                 </div>
             </div>
         </div>

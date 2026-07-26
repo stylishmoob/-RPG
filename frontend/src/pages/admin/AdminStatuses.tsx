@@ -2,6 +2,7 @@ import { useEffect,useState} from "react"
 import { useNavigate } from "react-router-dom";
 
 import type { StatusesType,StatusesDataType } from "../../types/api";
+import styles from "../../styles/admin/AdminStatuses.module.css";
 
 function AdminStatuses(){
     const[StatusesData,setStatusesData] = useState<StatusesDataType | null>(null);
@@ -173,9 +174,9 @@ function AdminStatuses(){
         
 
     return(
-        <div>
-            <h2>ステータス追加</h2>
-            <form onSubmit={addHandleSubmit}>
+        <div className={styles.page}>
+            <h2 className={styles.title}>ステータス追加</h2>
+            <form className={styles.form} onSubmit={addHandleSubmit}>
                 <input 
                     type="text" 
                     value={addStatusName} 
@@ -200,7 +201,7 @@ function AdminStatuses(){
                 <button type="submit">追加</button>
             </form>
 
-            <form onSubmit={importCsvSubmit}>
+            <form className={styles.form} onSubmit={importCsvSubmit}>
                 <input
                     type="file"
                     accept=".csv,text/csv"
@@ -213,23 +214,27 @@ function AdminStatuses(){
                 </button>
             </form>
 
-            <table>
-                <tr>
-                    <th>ID</th>
-                    <th>ステータス名</th>
-                    <th>デフォルト値</th>
-                    <th>ステータスタイプ</th>
-                    <th>有効・無効</th>
-                </tr>
-                {masterStatuses.map((status) => {
+            <table className={styles.table}>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ステータス名</th>
+                        <th>デフォルト値</th>
+                        <th>ステータスタイプ</th>
+                        <th>有効・無効</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {masterStatuses.map((status) => {
 
                     return(
                         <tr 
                             key={status.id} 
-                            className={editingId === status.id ? "editing-row" :""}
+                            className={editingId === status.id ? styles.editingRow : ""}
                         >
                         <td>{status.id}</td>
-                        <td>   
+                        <td>
+                            <div>{status.name}</div>
                             <input 
                             type="text" 
                             value={editStatusName}
@@ -238,7 +243,7 @@ function AdminStatuses(){
                             placeholder="ステータス名"
                             />
                         </td>
-                        <td>
+                        <td><div>{status.default_value}</div>
                             <input 
                             type="text" 
                             value={editStatusDefaultValue}
@@ -294,10 +299,10 @@ function AdminStatuses(){
                         </td>
                         </tr>
                         )
-                })}   
+                    })}
+                </tbody>
             </table>
         </div>
     )
-    
 }
 export default AdminStatuses;

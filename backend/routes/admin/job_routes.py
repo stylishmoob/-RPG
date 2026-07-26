@@ -20,7 +20,7 @@ admin_job_bp=Blueprint(
     url_prefix="/api/admin/jobs"
 )
 
-@admin_job_bp.get("/api/admin/jobs")
+@admin_job_bp.get("")
 @admin_required
 def api_admin_jobs():
     master_statuses=get_master_statuses()
@@ -57,7 +57,7 @@ def api_admin_jobs():
         ],
     })
     
-@admin_job_bp.post("/api/admin/jobs/add")
+@admin_job_bp.post("/add")
 @admin_required
 def api_admin_add_job():
     data=request.get_json()
@@ -72,7 +72,7 @@ def api_admin_add_job():
     }
     )
 
-@admin_job_bp.post("/api/admin/jobs/edit")
+@admin_job_bp.post("/edit")
 @admin_required
 def api_admin_edit_job():
     data=request.get_json()
@@ -90,7 +90,7 @@ def api_admin_edit_job():
     }
     )
 
-@admin_job_bp.post("/api/admin/jobs/import")
+@admin_job_bp.post("/import")
 @admin_required
 def api_admin_import_jobs():
     csv_file=request.files.get("file")

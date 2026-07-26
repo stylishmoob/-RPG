@@ -2,6 +2,7 @@ import { useEffect,useState} from "react"
 import { useNavigate } from "react-router-dom";
 
 import type { AchievementsType,AchievementsDataType } from "../../types/api";
+import styles from "../../styles/admin/AdminAchievements.module.css";
 
 
 function AdminAchievements(){
@@ -183,10 +184,10 @@ function AdminAchievements(){
     }
 
     return (
-        <div>
-            <h2>勲章・称号 管理</h2>
+        <div className={styles.page}>
+            <h2 className={styles.title}>勲章・称号 管理</h2>
 
-            <form onSubmit={addAchievementSubmit}>
+            <form className={styles.form} onSubmit={addAchievementSubmit}>
                 <select 
                     value={addCategoryId}
                     onChange={(e) => setAddCategoryId(e.target.value)}>
@@ -223,7 +224,7 @@ function AdminAchievements(){
                 <button type="submit">追加</button>
             </form>
 
-            <form onSubmit={importCsvSubmit}>
+            <form className={styles.form} onSubmit={importCsvSubmit}>
                 <input
                     type="file"
                     accept=".csv,text/csv"
@@ -236,20 +237,23 @@ function AdminAchievements(){
                 </button>
             </form>
 
-            <table>
-                <tr>
-                    <th>ID</th>
-                    <th>必要カテゴリー名</th>
-                    <th>必要時間/h</th>
-                    <th>アチーブメント名</th>
-                    <th>称号名</th>
-                    <th>有効化・無効化</th>
-                </tr>
+            <table className={styles.table}>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>必要カテゴリー名</th>
+                        <th>必要時間/h</th>
+                        <th>アチーブメント名</th>
+                        <th>称号名</th>
+                        <th>有効化・無効化</th>
+                    </tr>
+                </thead>
 
-                {achievements.map((achievement) => {
+                <tbody>
+                    {achievements.map((achievement) => {
                     return(
                         <tr key={achievement.id}
-                            className={editingId === achievement.id ? "editing-row" :""}
+                            className={editingId === achievement.id ? styles.editingRow : ""}
                          >
                             <td>{achievement.id}</td>
                             <td>
@@ -328,7 +332,8 @@ function AdminAchievements(){
                             </td>
                         </tr>
                     )
-                })}
+                    })}
+                </tbody>
             </table>
         </div>
     )

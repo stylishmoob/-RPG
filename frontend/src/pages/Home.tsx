@@ -3,9 +3,20 @@ import { Link, useNavigate } from "react-router-dom";
 
 import type { HomeDataType,savedataType } from "../types/api";
 
-import "../styles/home.css";
+import styles from "../styles/home.module.css";
 
+function getProfileValueFontSize(value:string){
+    const weightedLength = [...value].reduce((length,character) => {
+        const isHalfWidth = /^[\x20-\x7E]$/.test(character);
+        return length + (isHalfWidth ? 0.6 : 1);
+    },0);
 
+    if (weightedLength === 0){
+        return 26;
+    }
+
+    return Math.max(12,Math.min(26,135 / weightedLength));
+}
 
 function Home() {
     const [HomeData,setHomeData] = useState<HomeDataType | null>(null);
@@ -105,6 +116,8 @@ function Home() {
     }
 
     async function timerButton() {
+        alert("clicked");
+        console.log("clicked");
         if(!IsRunning){
 
             setIsRunning(true);
@@ -164,43 +177,48 @@ function Home() {
             const result = await response.json();
             return result;
     }
-        
   return (
-    <div className="home">
-        <div className="main">     
-            <div className="app">
-                <div className="left-column">
-                    <div className="card profile-box" id="profile-box">
-                        <div className="card-inner">
-                            <div className="card-content">
-                                <h3>PROFILE</h3>
-                                <div className="profile-main">
-                                    <div className="player-image"> 
+    <div className={`${styles.home}`}>
+        <div className={`${styles.main}`}>     
+            <div className={`${styles.app}`}>
+                <div className={`${styles.leftColumn}`}>
+                    <div className={`${styles.card} ${styles.profileBox}`} id="profile-box">
+                        <div className={`${styles.cardInner}`}>
+                            <div className={`${styles.cardContent}`}>
+                                <div className={`${styles.profileMain}`}>
+                                    <div className={`${styles.playerImage}`}> 
                                         
                                     </div>
-                                    <div className="user-name">
-                                        <div className="NAME">NAME</div> 
-                                        <div className="NAME-value">{HomeData.user.name}</div> 
+                                    <div className={`${styles.userName}`}>
+                                        <div className={`${styles.NAME}`}>NAME</div> 
+                                        <div 
+                                            className={`${styles.NAMEValue}`}
+                                            style={{
+                                                fontSize:`${getProfileValueFontSize(HomeData.user.name)}px`,
+                                            }}
+                                        >
+                                            {HomeData.user.name}
+                                        </div> 
                                     </div>
-                                    <div className="job-name">
-                                        <div className="CLASS">CLASS</div>
-                                        <div className="CLASS-value">{HomeData.user.current_job_name ?? "なし"}</div>
+                                    <div className={`${styles.jobName}`}>
+                                        <div className={`${styles.CLASS}`}>CLASS</div>
+                                        <div className={`${styles.CLASSValue}`}>{HomeData.user.current_job_name ?? "なし"}</div>
                                     </div>
                                 </div>
                             
-                                <div className="lv-exp-card">
-                                    <div className="user-level">
-                                        <div className="LEVEL">Lv.<span className="LEVEL-value">{HomeData.user.level}</span>
+                                <div className={`${styles.lvExpCard}`}>
+                                    <div className={`${styles.userLevel}`}>
+                                        <div className={`${styles.LEVEL}`}>Lv.<span className={`${styles.LEVELValue}`}>{HomeData.user.level}</span>
                                         </div>  
                                     </div>  
-                                    <div className="level-up">LEVEL UP!!</div>   
+                                    <div className={`${styles.levelUp}`}>LEVEL UP!!</div>   
                         
 
-                                    <div className="exp-text">
+                                    <div className={`${styles.expText}`}>
                                         EXP <span id="current-exp">{HomeData.exp.current}</span>/<span id="next-exp">{HomeData.exp.next}</span>    
                                     </div>
-                                    <div className="exp-bar">
-                                        <div className="exp-fill" 
+                                    <div className={`${styles.expBar}`}>
+                                        <div className={`${styles.expFill}`} 
                                             data-width={HomeData.exp.percent} 
                                             style={{ width: `${HomeData.exp.percent}%`}}>
                                         </div>
@@ -210,24 +228,23 @@ function Home() {
                         </div>
                     </div>
 
-                    <div className="card status-box" id="status-box">
-                        <div className="card-inner">
-                            <div className="card-content">
-                                <div id="status-list" className="status-list">
-                                    <h3>STATUS</h3>
-                                    <div id="status-hp" className="status-hp">
-                                        <span className="status-name">{HP.name}</span>
-                                        <div className="hp-bar">
-                                            <div className="hp-fill"></div>
+                    <div className={`${styles.card} ${styles.statusBox}`} id="status-box">
+                        <div className={`${styles.cardInner}`}>
+                            <div className={`${styles.cardContent}`}>
+                                <div id="status-list" className={`${styles.statusList}`}>
+                                    <div id="status-hp" className={`${styles.statusHp}`}>
+                                        <span className={`${styles.statusName}`}>{HP.name}</span>
+                                        <div className={`${styles.hpBar}`}>
+                                            <div className={`${styles.hpFill}`}></div>
                                         </div>
-                                        <span id="hp-value" className="hp-value">{HP.value}/{HP.value}</span>
+                                        <span id="hp-value" className={`${styles.hpValue}`}>{HP.value}/{HP.value}</span>
                                     </div>
-                                    <div id="status-mp" className="status-mp">
-                                        <span className="status-name">{MP.name}</span>
-                                        <div className="mp-bar">
-                                            <div className="mp-fill"></div>
+                                    <div id="status-mp" className={`${styles.statusMp}`}>
+                                        <span className={`${styles.statusName}`}>{MP.name}</span>
+                                        <div className={`${styles.mpBar}`}>
+                                            <div className={`${styles.mpFill}`}></div>
                                         </div>
-                                        <span id="mp-value" className="mp-value">{MP.value}/{MP.value}</span>
+                                        <span id="mp-value" className={`${styles.mpValue}`}>{MP.value}/{MP.value}</span>
                                     </div>
 
                                     {HomeData.user_statuses
@@ -239,13 +256,13 @@ function Home() {
                                         const status_percent = Math.max(0,Math.min(status.value,100));
                                         
                                         return(
-                                            <div className="status-row" key={status.id}>
-                                                <div className="status-name">{status.name}</div>
-                                                <div className="status-bar">
-                                                    <div className="status-fill" style={{ width: `${status_percent}%`}} ></div>
+                                            <div className={`${styles.statusRow}`} key={status.id}>
+                                                <div className={`${styles.statusName}`}>{status.name}</div>
+                                                <div className={`${styles.statusBar}`}>
+                                                    <div className={`${styles.statusFill}`} style={{ width: `${status_percent}%`}} ></div>
                                                 </div>
                                                 <div>
-                                                    <span className="status-value">{status.value}</span>
+                                                    <span className={`${styles.statusValue}`}>{status.value}</span>
                                                 </div>
                                             </div>
                                         );
@@ -256,21 +273,20 @@ function Home() {
                     </div>
                 </div>
 
-                <div className="right-column">
-                    <div id="stopwatch" className="card stopwatch-card">
-                        <div className="card-inner">
-                            <div className="card-content">
-                                <h3>STOP WATCH</h3>
+                <div className={`${styles.rightColumn}`}>
+                    <div id="stopwatch" className={`${styles.card} ${styles.stopwatchCard}`}>
+                        <div className={`${styles.cardInner}`}>
+                            <div className={`${styles.cardContent}`}>
                                 <h4 >{formatTime(DurationSeconds)}</h4>      
                                 <button 
                                 type="button" 
-                                className="btn" 
+                                className={`${styles.btn}`} 
                                 onClick={timerButton} 
                                 disabled={user_categories.length===0}>
                                 <span>{IsRunning ? "STOP" : "START"}</span>
                                 </button>     
                                 <select 
-                                className="select-box"
+                                className={`${styles.selectBox}`}
                                 value={CategoryId}
                                 onChange={(e) => setCategoryId(e.target.value)}
                                 required>
@@ -285,10 +301,9 @@ function Home() {
                         </div>
                     </div>
             
-                    <div className="card today-box">
-                        <div className="card-inner">
-                            <div className="card-content">
-                                <h3>TODAY</h3>
+                    <div className={`${styles.card} ${styles.todayBox}`}>
+                        <div className={`${styles.cardInner}`}>
+                            <div className={`${styles.cardContent}`}>
                                 <table>
                                     <thead>
                                     <tr>
@@ -312,10 +327,9 @@ function Home() {
                         </div>
                     </div>
 
-                    <div className="card menu-box">
-                        <div className="card-inner">
-                            <h3>MENU</h3>
-                            <div className="menu-links">
+                    <div className={`${styles.card} ${styles.menuBox}`}>
+                        <div className={`${styles.cardInner}`}>
+                            <div className={`${styles.menuLinks}`}>
                             <Link to="/status">ステータス詳細</Link>
                             <Link to="/category">カテゴリー設定</Link>
                             <Link to="/history">活動履歴</Link>
@@ -324,24 +338,24 @@ function Home() {
                     </div>
                 
                     {HomeData.is_admin && (
-                        <div className="admin">
+                        <div className={`${styles.admin}`}>
                             <Link to="/admin">管理画面</Link>
                         </div>
                     )}
                 
                     <button 
-                        className="logout-btn"
+                        className={`${styles.logoutBtn}`}
                         onClick={() => setIsLogoutModalOpen(true)}
                     >
                     ログアウト
                     </button>
                     
                     {isLogoutModalOpen && (
-                        <div className="modal">
-                            <div className="modal-content">
+                        <div className={`${styles.modal}`}>
+                            <div className={`${styles.modalContent}`}>
                                 <h3>ログアウトしますか？</h3>
 
-                                <div className="modal-buttons">
+                                <div className={`${styles.modalButtons}`}>
                                     <button onClick={logout}>
                                         はい
                                     </button>
@@ -355,7 +369,7 @@ function Home() {
                         </div>
                     )}
                 </div>
-                <div id="notification" className="notification"></div>     
+                <div id="notification" className={`${styles.notification}`}></div>     
             </div>
         </div>
     </div>
