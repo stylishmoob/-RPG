@@ -26,7 +26,7 @@ def api_admin_categories():
         "MasterCategories":[{
             "id":row["id"],
             "name":row["category_name"],
-            "is_active":row["is_active"],
+            "is_active":bool(row["is_active"]),
         }
         for row in master_categories
         ],
@@ -35,7 +35,8 @@ def api_admin_categories():
 @admin_category_bp.post("/add")
 @admin_required
 def api_admin_add_categories():
-    category_name=request.get_json()
+    data=request.get_json()
+    category_name=data["category_name"]
 
     add_master_category(category_name)
 
@@ -50,9 +51,9 @@ def api_admin_edit_categories():
 
     category_id=data["category_id"]
     category_name=data["category_name"]
-    category_is_active=data["category_is_active"]
+    is_active=data["is_active"]
 
-    edit_master_category(category_id,category_name,category_is_active)
+    edit_master_category(category_id,category_name,is_active)
 
     return jsonify({
         "success":True,

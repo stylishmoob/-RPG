@@ -33,8 +33,8 @@ def api_admin_jobs():
         "masterJobs":[{
             "id":row["id"],
             "job_name":row["job_name"],
-            "is_active":row["is_active"],
-            "is_default":row["is_default"],
+            "is_active":bool(row["is_active"]),
+            "is_default":bool(row["is_default"]),
          } for row in master_jobs 
         ],
         "jobRequirements":[{
@@ -43,7 +43,7 @@ def api_admin_jobs():
             "required_status_id":row["required_status_id"],
             "required_status_name":row["required_status_name"],
             "required_status_value":row["required_status_value"],
-            "is_active":row["is_active"],
+            "is_active":bool(row["is_active"]),
         } for row in job_requirements
         ],
          "masterStatuses":[
@@ -51,7 +51,7 @@ def api_admin_jobs():
             "id":row["id"],
             "name":row["status_name"],
             "type":row["status_type"],
-            "is_active":row["is_active"]
+            "is_active":bool(row["is_active"])
             }
         for row in master_statuses
         ],

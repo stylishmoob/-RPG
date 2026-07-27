@@ -32,31 +32,34 @@ def api_admin_status_rules():
 
     return jsonify({
         "success":True,
-        "statusRules":[{
+        "statusRules":[
+            {
             "id":row["id"],
             "category_id":row["category_id"],
             "category_name":row["category_name"],
             "status_id":row["status_id"],
             "status_name":row["status_name"],
             "gain_per_hours":row["gain_per_hours"],
-            "is_active":row["is_active"],}
+            "is_active":bool(row["is_active"]),
+            }
             for row in status_rules
             ],
-        "masterCategories":[{
+        "masterCategories":[
+            {
             "id":row["id"],
             "name":row["category_name"],
-            "is_active":row["is_active"],
-        }
-        for row in master_categories
+            "is_active":bool(row["is_active"]),
+            }
+            for row in master_categories
         ],
         "masterStatuses":[
             { 
             "id":row["id"],
             "name":row["status_name"],
             "type":row["status_type"],
-            "is_active":row["is_active"]
+            "is_active":bool(row["is_active"])
             }
-        for row in master_statuses
+            for row in master_statuses
         ],
    })
 @admin_rule_bp.post("/add")

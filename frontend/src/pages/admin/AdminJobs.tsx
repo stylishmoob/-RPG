@@ -73,6 +73,17 @@ function AdminJobs(){
 
     async function addHandleSubmit(e: React.FormEvent<HTMLElement>){
         e.preventDefault();
+
+        if(
+            addJobName.trim() === "" ||
+            addRequirements.length === 0 ||
+            addRequirements.some((requirement) =>
+                requirement.statusId === "" ||
+                requirement.requiredValue === ""
+            )  
+        ) 
+        {return};
+
         try{
             await handleAdd();
             await fetchJobsData();
@@ -108,7 +119,17 @@ function AdminJobs(){
     }
 
     async function editJobSubmit(){
-        if(editingId === "") return;
+        if(
+            editingId === ""   ||
+            editJobName.trim() === "" ||
+            editRequirements.length === 0 ||
+            editRequirements.some((requirement) =>
+                requirement.id === "" ||
+                requirement.statusId === "" ||
+                requirement.requiredValue === ""
+            )  
+        ) 
+        {return};
         
         try{
             await handleEdit(editingId,editJobName,editJobIsActive,editJobIsDefault,editRequirements);
@@ -168,7 +189,7 @@ function AdminJobs(){
         setEditJobIsDefault(job.is_default);
 
         const targetRequirements = jobRequirements
-            .filter((req) => req.job_id=job.id)
+            .filter((req) => req.job_id === job.id)
             .map((req) => ({
                 id:req.id,
                 statusId:req.required_status_id,
@@ -219,6 +240,7 @@ function AdminJobs(){
     return(
         <div className={styles.page}>
             <h2 className={styles.title}>職業管理</h2>
+            <h3>追加</h3>
             <form className={styles.form} onSubmit={addHandleSubmit}>
                 <input 
                     type="text" 
@@ -274,7 +296,7 @@ function AdminJobs(){
                 </button>
                 <button type="submit">追加</button>
             </form>
-
+            <h3>csv追加</h3>
             <form className={styles.form} onSubmit={importCsvSubmit}>
                 <input
                     type="file"
@@ -287,7 +309,7 @@ function AdminJobs(){
                     CSV一括追加
                 </button>
             </form>
-
+            <h3>編集</h3>
             <table className={styles.table}>
                 <thead>
                     <tr>
@@ -296,6 +318,7 @@ function AdminJobs(){
                         <th>必要ステータス</th>
                         <th>有効・無効</th>
                         <th>デフォルト</th>
+                        <th>編集・変更</th>
                     </tr>
                 </thead>
 
@@ -309,14 +332,16 @@ function AdminJobs(){
                         >
                             <td>{job.id}</td>
                             <td>
-                                <div>{job.job_name}</div>
-                                <input
-                                    type="text"
-                                    value={editJobName}
-                                    disabled={editingId !== job.id}
-                                    onChange={(e) => setEditJobName(e.target.value)}
-                                    placeholder="職業名"
-                                />
+                                <div className={styles.field}>
+                                    <span>{job.job_name}</span>
+                                    <input
+                                        type="text"
+                                        value={editingId === job.id ? editJobName : job.job_name}
+                                        disabled={editingId !== job.id}
+                                        onChange={(e) => setEditJobName(e.target.value)}
+                                        placeholder="職業名"
+                                    />
+                                </div>
                             </td>
                             <td>
                                 {jobRequirements

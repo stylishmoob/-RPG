@@ -28,25 +28,27 @@ def api_admin_achievements():
     return jsonify({
         "success":True,
         "achievements":[
-        {
-        "id":row["id"],
-        "category_id":row["category_id"],
-        "category_name":row["category_name"],
-        "required_hours":row["required_hours"],
-        "achievement_name":row["achievement_name"],
-        "title_name":row["title_name"],
-        "is_active":row["is_active"],
-        }
-        for row in master_achievements
+            {
+            "id":row["id"],
+            "category_id":row["category_id"],
+            "category_name":row["category_name"],
+            "required_hours":row["required_hours"],
+            "achievement_name":row["achievement_name"],
+            "title_name":row["title_name"],
+            "is_active":bool(row["is_active"]),
+            }
+            for row in master_achievements
         ],
-        "mastercategories":[{
+        "mastercategories":[
+            {
             "id":row["id"],
             "name":row["category_name"],
-            "is_active":row["is_active"],
+            "is_active":bool(row["is_active"]),
+            }
+            for row in master_categories
+        ],
         }
-        for row in master_categories
-        ],})
-
+    )
     
 @admin_achievement_bp.post("/add")
 @admin_required
@@ -54,10 +56,10 @@ def api_admin_add_achievements():
 
     data=request.get_json()
 
-    required_category_id=data("category_id")
-    required_hours=data("required_hours")
-    achievement_name=data("achievement_name")
-    title_name=data("title_name")
+    required_category_id=data["category_id"]
+    required_hours=data["required_hours"]
+    achievement_name=data["achievement_name"]
+    title_name=data["title_name"]
 
     add_master_achievement(required_category_id,required_hours,achievement_name,title_name)
 
@@ -71,13 +73,12 @@ def api_admin_edit_achievements():
     
     data=request.get_json()
 
-    achievement_id=data("achievement_id")
-    required_category_id=data("category_id")
-    required_hours=data("required_hours")
-    achievement_name=data("achievement_name")
-    title_name=data("title_name")
-    is_active=data("is_active")
-
+    achievement_id=data["achievement_id"]
+    required_category_id=data["category_id"]
+    required_hours=data["required_hours"]
+    achievement_name=data["achievement_name"]
+    title_name=data["title_name"]
+    is_active=data["is_active"]
 
     edit_master_achievement(achievement_id,required_category_id,required_hours,achievement_name,title_name,is_active)
 

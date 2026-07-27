@@ -57,11 +57,17 @@ function AdminStatuses(){
     async function addHandleSubmit(e: React.FormEvent<HTMLElement>){
         e.preventDefault();
 
+        if(
+            addStatusName === "" ||
+            addStatusDefaultValue === "" 
+        ) return;
+
         try{
             await handleAdd();
             await fetchStatusesData();
 
             setAddStatusName("");
+            setAddStatusDefaultValue("");
             setAddStatusType("front");
         }catch(error){
             console.error(error);
@@ -76,6 +82,7 @@ function AdminStatuses(){
             },
             body:JSON.stringify({
                 "status_name":addStatusName,
+                "default_value":addStatusDefaultValue,
                 "status_type":addStatusType,
             }),
         });
@@ -87,7 +94,11 @@ function AdminStatuses(){
     }
 
     async function editStatusSubmit(){
-        if(editingId === "") return;
+        if(
+            editingId === "" ||
+            editStatusName === "" ||
+            editStatusDefaultValue === ""
+        ) return;
        
         try{
             await handleEdit(
@@ -176,6 +187,7 @@ function AdminStatuses(){
     return(
         <div className={styles.page}>
             <h2 className={styles.title}>ステータス追加</h2>
+            <h3>追加</h3>
             <form className={styles.form} onSubmit={addHandleSubmit}>
                 <input 
                     type="text" 
@@ -200,7 +212,7 @@ function AdminStatuses(){
                 </select>
                 <button type="submit">追加</button>
             </form>
-
+            <h3>csv追加</h3>
             <form className={styles.form} onSubmit={importCsvSubmit}>
                 <input
                     type="file"
@@ -213,7 +225,7 @@ function AdminStatuses(){
                     CSV一括追加
                 </button>
             </form>
-
+            <h3>編集</h3>
             <table className={styles.table}>
                 <thead>
                     <tr>
@@ -222,6 +234,7 @@ function AdminStatuses(){
                         <th>デフォルト値</th>
                         <th>ステータスタイプ</th>
                         <th>有効・無効</th>
+                        <th>編集・変更</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -234,23 +247,28 @@ function AdminStatuses(){
                         >
                         <td>{status.id}</td>
                         <td>
-                            <div>{status.name}</div>
+                            <div className={styles.field}>
+                            <span>{status.name}</span>
                             <input 
                             type="text" 
-                            value={editStatusName}
+                            value={editingId === status.id ? editStatusName : status.name}
                             disabled={editingId !== status.id}
                             onChange={(e) => setEditStatusName(e.target.value)}
                             placeholder="ステータス名"
                             />
+                            </div>
                         </td>
-                        <td><div>{status.default_value}</div>
+                        <td>
+                            <div className={styles.field}>
+                            <span>{status.default_value}</span>
                             <input 
                             type="text" 
-                            value={editStatusDefaultValue}
+                            value={editingId === status.id ? editStatusDefaultValue : status.default_value}
                             disabled={editingId !== status.id}
                             onChange={(e) => setEditStatusDefaultValue(e.target.value)}
                             placeholder="デフォルト値"
                             />
+                            </div>
                         </td>
                         <td>
                             <select 

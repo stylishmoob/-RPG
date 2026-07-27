@@ -49,9 +49,14 @@ function AdminCategories(){
     async function addHandleSubmit(e: React.FormEvent<HTMLElement>){
         e.preventDefault();
 
+        if(
+            addCategoryName === ""
+        ) return;
+
         try{
             await handleAdd(addCategoryName);
             setAddCategoryName("");
+            await fetchMasterCategoriesData();
         }catch(error){
             console.error(error);
         }
@@ -75,7 +80,10 @@ function AdminCategories(){
     }
 
     async function editCategorySubmit(){
-        if(editingId === "") return;
+        if(
+            editingId === "" ||
+            editCategoryName === ""
+        ) return;
        
         try{
             await handleEdit(editingId,editCategoryName,editCategoryIsActive);
@@ -103,7 +111,7 @@ function AdminCategories(){
             body:JSON.stringify({
                 "category_id":editingId,
                 "category_name":editCategoryName,
-                "category_is_active":editCategoryIsActive,
+                "is_active":editCategoryIsActive,
         }),
     });
         if(!response.ok){
@@ -149,7 +157,7 @@ function AdminCategories(){
     return(
         <div className={styles.page}>
             <h2 className={styles.title}>カテゴリー管理</h2>
-
+            <h3>追加</h3>
             <form className={styles.form} onSubmit={addHandleSubmit}>
                 <input 
                     type="text" 
@@ -160,7 +168,7 @@ function AdminCategories(){
                 />
                 <button type="submit">追加</button>
             </form>
-
+            <h3>csv追加</h3>
             <form className={styles.form} onSubmit={importCsvSubmit}>
                 <input
                     type="file"
@@ -173,13 +181,14 @@ function AdminCategories(){
                     CSV一括追加
                 </button>
             </form>
-
+            <h3>編集</h3>
             <table className={styles.table}>
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>カテゴリー名</th>
                         <th>有効化・無効化</th>
+                        <th>編集・変更</th>
                     </tr>
                 </thead>
 
@@ -192,14 +201,16 @@ function AdminCategories(){
                         >
                             <td>{category.id}</td>
                             <td>
-                                <div>{category.name}</div>
-                                <input 
-                                    type="text" 
-                                    value={editCategoryName}
-                                    disabled={editingId !== category.id}
-                                    placeholder="カテゴリー名" 
-                                    onChange={(e) => setEditCategoryName(e.target.value)}
-                                />
+                                <div className={styles.field}>
+                                    <span>{category.name}</span>
+                                    <input
+                                        type="text"
+                                        value={editingId === category.id ? editCategoryName : category.name}
+                                        disabled={editingId !== category.id}
+                                        placeholder="カテゴリー名"
+                                        onChange={(e) => setEditCategoryName(e.target.value)}
+                                    />
+                                </div>
                             </td>
                             <td>
                                 <select

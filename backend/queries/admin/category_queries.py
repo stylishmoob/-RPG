@@ -49,15 +49,17 @@ def add_master_category(category_name):
     finally:
         conn.close()
 
-def edit_master_category(category_id,category_name,category_is_active):
+def edit_master_category(category_id,category_name,is_active):
     conn=sqlite3.connect(DB_NAME)
     cur=conn.cursor()
 
     try:
         cur.execute("""
-            UPDATE master_categories SET category_name=? is_active=?
+            UPDATE master_categories 
+            SET category_name=?, 
+                is_active=?
             WHERE id=?
-            """,(category_name,category_is_active,category_id))
+            """,(category_name,is_active,category_id))
         
         conn.commit()
 

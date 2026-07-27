@@ -17,16 +17,17 @@ def get_master_achievements():
 
     try:
         cur.execute("""
-            SELECT master_achievements.id AS id,
-                    required_category_id AS category_id,
-                    master_categories.category_name AS category_name,
-                    required_hours,
-                    achievement_name,
-                    title_name,
-                    master_achievements.is_active AS is_active
+            SELECT 
+                master_achievements.id AS id,
+                required_category_id AS category_id,
+                master_categories.category_name AS category_name,
+                master_achievements.required_hours,
+                master_achievements.achievement_name,
+                master_achievements.title_name,
+                master_achievements.is_active AS is_active
             FROM master_achievements
-            JOIN master_categories
-            ON required_category_id=master_categories.id""")
+            LEFT JOIN master_categories
+            ON master_achievements.required_category_id=master_categories.id""")
         
         master_achievements=cur.fetchall()
         return master_achievements

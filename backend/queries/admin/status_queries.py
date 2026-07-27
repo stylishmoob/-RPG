@@ -34,7 +34,7 @@ def add_master_status(status_name,default_value,status_type):
         cur.execute("""
             INSERT INTO master_statuses
             (status_name,default_value,status_type)
-            VALUES(?,?)""",(status_name,default_value,status_type))
+            VALUES(?,?,?)""",(status_name,default_value,status_type))
         
         conn.commit()
 

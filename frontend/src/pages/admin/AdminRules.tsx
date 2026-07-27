@@ -61,6 +61,12 @@ function AdminRules(){
      async function addHandleSubmit(e: React.FormEvent<HTMLElement>){
         e.preventDefault();
 
+        if(
+            addCategoryId === "" ||
+            addStatusId === "" ||
+            addGainHours === null
+        )return;
+
         try{
             await handleAdd();
             await fetchStatusRulesData();
@@ -179,14 +185,18 @@ function AdminRules(){
     return(
         <div className={styles.page}>
             <h2 className={styles.title}>ステータス上昇ルール管理</h2>
+            <h3>追加</h3>
             <form className={styles.form} onSubmit={addHandleSubmit}>
                 <select 
                     value={addCategoryId}
                     onChange={(e) => setAddCategoryId(e.target.value)}>
-
+                    <option>カテゴリー選択</option>
                     {masterCategories.map((category) => {
                         return(
-                            <option value={category.id}>
+                            <option 
+                                key={category.id}
+                                value={category.id}
+                            >
                                 {category.id} : {category.name}
                             </option>
                         )
@@ -195,10 +205,13 @@ function AdminRules(){
                 <select 
                     value={addStatusId}
                     onChange={(e) => setAddStatusId(e.target.value)}>
-
+                    <option>ステータス選択</option>
                     {masterStatuses.map((status) => {
                         return(
-                            <option value={status.id}>
+                            <option 
+                                key={status.id}
+                                value={status.id}
+                            >
                                 {status.id} : {status.name}
                             </option>
                         )
@@ -212,7 +225,7 @@ function AdminRules(){
                     required/>
                 <button type="submit">追加</button>
             </form>
-
+            <h3>csv追加</h3>
             <form className={styles.form} onSubmit={importCsvSubmit}>
                 <input
                     type="file"
@@ -225,7 +238,7 @@ function AdminRules(){
                     CSV一括追加
                 </button>
             </form>
-
+            <h3>編集</h3>
             <table className={styles.table}>
                 <thead>
                     <tr>
@@ -234,6 +247,7 @@ function AdminRules(){
                         <th>ステータス名</th>
                         <th>上昇量/h</th>
                         <th>有効化・無効化</th>
+                        <th>編集・変更</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -245,15 +259,19 @@ function AdminRules(){
                             >
                                 <td>{statusRule.id}</td>
                                 <td>
-                                    <div>{statusRule.category_name}</div>
+                                    <span>{statusRule.category_name}</span>
                                     <select
                                         value={editCategoryId}
                                         disabled={editingId !== statusRule.id}
                                         onChange={(e) => setEditCategoryId(e.target.value)}
                                     >
+                                        <option>カテゴリー選択</option>
                                         {masterCategories.map((category) => {
                                             return(
-                                                <option value={category.id}>
+                                                <option 
+                                                    key={category.id}
+                                                    value={category.id}
+                                                >
                                                     {category.id}:{category.name}
                                                 </option>
                                             )
@@ -261,15 +279,19 @@ function AdminRules(){
                                     </select>
                                 </td>
                                 <td>
-                                    <div>{statusRule.status_name}</div>
+                                    <span>{statusRule.status_name}</span>
                                     <select
                                         value={editStatusId}
                                         disabled={editingId !== statusRule.id}
                                         onChange={(e) => setEditStatusId(e.target.value)}
-                                    >
+                                    >   
+                                        <option>ステータス選択</option>
                                         {masterStatuses.map((status) => {
                                             return(
-                                                <option value={status.id}>
+                                                <option 
+                                                    key={status.id}
+                                                    value={status.id}
+                                                >
                                                     {status.id}:{status.name}
                                                 </option>
                                             )
@@ -277,7 +299,7 @@ function AdminRules(){
                                     </select>
                                 </td>
                                 <td>
-                                    <div>{statusRule.gain_per_hours}</div>
+                                    <span>{statusRule.gain_per_hours}</span>
                                     <input
                                         type="text"
                                         value={editGainHours ?? ""}

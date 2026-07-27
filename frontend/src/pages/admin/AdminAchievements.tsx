@@ -65,6 +65,13 @@ function AdminAchievements(){
     async function addAchievementSubmit(e: React.FormEvent<HTMLElement>){
         e.preventDefault();
 
+        if(
+            addCategoryId === "" ||
+            addHours === null ||
+            addAchievementName === "" ||
+            addTitleName === "" 
+        ) return;
+
         try{
             await handleAdd();
             await fetchAchievementsData();
@@ -99,9 +106,12 @@ function AdminAchievements(){
     }
 
     async function editAchievementSubmit(){
-        if(editingId === "" ||
+        if(
+            editingId === "" ||
             editCategoryId === "" ||
-            editHours === null 
+            editHours === null ||
+            editAchievementName === "" ||
+            editTitleName === "" 
         ) return;
        
         try{
@@ -127,7 +137,7 @@ function AdminAchievements(){
         editAchievementIsActive:boolean
         )
         {
-        const response = await fetch("/api/admin/categories/edit", {
+        const response = await fetch("/api/admin/achievements/edit", {
             method:"POST",
             headers:{
                 "Content-Type":"application/json",
@@ -138,7 +148,7 @@ function AdminAchievements(){
                 "required_hours":editHours,
                 "achievement_name":editAchievementName,
                 "title_name":editTitleName,
-                "Achievement_is_active":editAchievementIsActive,
+                "is_active":editAchievementIsActive,
         }),
     });
         if(!response.ok){
@@ -166,7 +176,7 @@ function AdminAchievements(){
             const formData = new FormData();
             formData.append("file", csvFile);
 
-            const response = await fetch("/api/admin/achivements/import", {
+            const response = await fetch("/api/admin/achievements/import", {
                 method: "POST",
                 body: formData,
             });
@@ -186,15 +196,19 @@ function AdminAchievements(){
     return (
         <div className={styles.page}>
             <h2 className={styles.title}>勲章・称号 管理</h2>
-
+            <h3>追加</h3>
             <form className={styles.form} onSubmit={addAchievementSubmit}>
                 <select 
                     value={addCategoryId}
                     onChange={(e) => setAddCategoryId(e.target.value)}>
-
+                    
+                    <option>カテゴリーを選択</option>
                     {masterCategories.map((category) => {
                         return(
-                            <option value={category.id}>
+                            <option
+                                key={category.id}
+                                value={category.id}
+                            >
                                 {category.id} : {category.name}
                             </option>
                         )          
@@ -223,7 +237,7 @@ function AdminAchievements(){
                 />
                 <button type="submit">追加</button>
             </form>
-
+            <h3>csv追加</h3>
             <form className={styles.form} onSubmit={importCsvSubmit}>
                 <input
                     type="file"
@@ -236,16 +250,17 @@ function AdminAchievements(){
                     CSV一括追加
                 </button>
             </form>
-
+            <h3>編集</h3>
             <table className={styles.table}>
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>必要カテゴリー名</th>
                         <th>必要時間/h</th>
-                        <th>アチーブメント名</th>
+                        <th>勲章名</th>
                         <th>称号名</th>
                         <th>有効化・無効化</th>
+                        <th>編集・変更</th>
                     </tr>
                 </thead>
 
@@ -257,7 +272,7 @@ function AdminAchievements(){
                          >
                             <td>{achievement.id}</td>
                             <td>
-                                <div>{achievement.category_name}</div>
+                                <span>{achievement.category_name}</span>
                                 <select 
                                     value={editCategoryId}
                                     disabled={editingId !== achievement.id}
@@ -265,39 +280,53 @@ function AdminAchievements(){
 
                                     {masterCategories.map((category) => {
                                         return(
-                                            <option value={category.id}>
-                                            {category.id} : {category.name}
+                                            <option
+                                                key={category.id}
+                                                value={category.id}
+                                            >
+                                                {category.id} : {category.name}
                                             </option>
                                         )          
                                     })}
                                 </select>
                             </td>
                             <td>
-                                <div>{achievement.required_hours}</div>
-                                <input
-                                    type="text"
-                                    value={editHours ?? ""}
-                                    disabled={editingId !== achievement.id}
-                                    placeholder="時間/h" 
-                                    onChange={(e) => setEditHours(e.target.value === "" ? null: Number(e.target.value))}/>
+                                <div className={styles.field}>
+                                    <span>{achievement.required_hours}</span>
+                                    <input
+                                        type="text"
+                                        value={editHours ?? ""}
+                                        disabled={editingId !== achievement.id}
+                                        placeholder="時間/h"
+                                        onChange={(e) => setEditHours(e.target.value === "" ? null: Number(e.target.value))}
+                                    />
+                                </div>
                             </td>
                                     
-                            <td>{achievement.achievement_name}</td>
-                                <input 
-                                    type="text" 
-                                    value={editAchievementName}
-                                    disabled={editingId !== achievement.id}
-                                    placeholder="勲章名" 
-                                    onChange={(e) => setEditAchievementName(e.target.value)}
-                                />
-                            <td>{achievement.title_name}</td>
-                                <input 
-                                    type="text" 
-                                    value={editTitleName}
-                                    disabled={editingId !== achievement.id}
-                                    placeholder="称号名" 
-                                    onChange={(e) => setEditTitleName(e.target.value)}
-                                />
+                            <td>
+                                <div className={styles.field}>
+                                    <span>{achievement.achievement_name}</span>
+                                    <input
+                                        type="text"
+                                        value={editingId === achievement.id ? editAchievementName : achievement.achievement_name}
+                                        disabled={editingId !== achievement.id}
+                                        placeholder="勲章名"
+                                        onChange={(e) => setEditAchievementName(e.target.value)}
+                                    />
+                                </div>
+                            </td>
+                            <td>
+                                <div className={styles.field}>
+                                    <span>{achievement.title_name}</span>
+                                    <input
+                                        type="text"
+                                        value={editingId === achievement.id ? editTitleName : achievement.title_name}
+                                        disabled={editingId !== achievement.id}
+                                        placeholder="称号名"
+                                        onChange={(e) => setEditTitleName(e.target.value)}
+                                    />
+                                </div>
+                            </td>
                             <td>
                                 <select
                                 value={editingId === achievement.id 

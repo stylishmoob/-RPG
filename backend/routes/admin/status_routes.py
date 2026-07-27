@@ -28,7 +28,7 @@ def api_admin_statuses():
             "name":row["status_name"],
             "type":row["status_type"],
             "default_value":row["default_value"],
-            "isActive":row["is_active"]
+            "isActive":bool(row["is_active"])
             }
             for row in master_statuses
         ],
