@@ -6,6 +6,7 @@ from backend.queries.admin.status_queries import(
     get_master_statuses,
     add_master_status,
     edit_master_status,
+    delete_master_status,
     import_status_csv,  
 )
 
@@ -68,6 +69,18 @@ def api_admin_edit_status():
     
     return jsonify({
         "success":True
+    })
+
+@admin_status_bp.post("/delete")
+@admin_required
+def api_admin_delete_status():
+    data=request.get_json()
+    status_id=data["status_id"]
+    result=delete_master_status(status_id)
+
+    return jsonify({
+        "success":True,
+        **result,
     })
 
 @admin_status_bp.post("/import")

@@ -133,64 +133,80 @@ function History() {
         <div className={styles.main}>
             <div className={styles.mainInner}>
                 <div className={styles.card}>
-                    <h2>カテゴリー別活動時間</h2>
+                    <div className={styles.cardInner}>
+                        <div className={styles.cardContent}>
+                            <h2>カテゴリー別活動時間</h2>
 
-                    <canvas ref={categoryChartRef}></canvas>
+                            <div className={styles.chartFrame}>
+                                <div className={styles.chartInner}>
+                                    <canvas ref={categoryChartRef}></canvas>
+                                </div>
+                            </div>
 
-                    <select
-                        className={styles.ctx1Period}
-                        onChange={(e) =>
-                            setCtx1Period(e.target.value as PeriodType)
-                        }
-                    >
-                        <option value="all">全期間</option>
-                        <option value="today">今日</option>
-                        <option value="7days">直近7日</option>
-                        <option value="week">今週</option>
-                        <option value="month">今月</option>
-                        <option value="year">今年</option>
-                    </select>
+                            <select
+                                className={styles.ctx1Period}
+                                onChange={(e) =>
+                                    setCtx1Period(e.target.value as PeriodType)
+                                }
+                            >
+                                <option value="all">全期間</option>
+                                <option value="today">今日</option>
+                                <option value="7days">直近7日</option>
+                                <option value="week">今週</option>
+                                <option value="month">今月</option>
+                                <option value="year">今年</option>
+                            </select>
 
-                    <select
-                        className={styles.ctx1Unit}
-                        onChange={(e) =>
-                            setCtx1Unit(e.target.value as UnitType)
-                        }
-                    >
-                        <option value="seconds">秒</option>
-                        <option value="minutes">分</option>
-                        <option value="hours">時間</option>
-                    </select>
+                            <select
+                                className={styles.ctx1Unit}
+                                onChange={(e) =>
+                                    setCtx1Unit(e.target.value as UnitType)
+                                }
+                            >
+                                <option value="seconds">秒</option>
+                                <option value="minutes">分</option>
+                                <option value="hours">時間</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
                 <div className={styles.card}>
-                    <h2>日別活動時間</h2>
+                    <div className={styles.cardInner}>
+                        <div className={styles.cardContent}>
+                            <h2>日別活動時間</h2>
 
-                    <canvas ref={dailyCategoryChartRef}></canvas>
+                            <div className={styles.chartFrame}>
+                                <div className={styles.chartInner}>
+                                    <canvas ref={dailyCategoryChartRef}></canvas>
+                                </div>
+                            </div>
 
-                    <select
-                        className={styles.ctx2Period}
-                        onChange={(e) =>
-                            setCtx2Period(e.target.value as PeriodType)
-                        }
-                    >
-                        <option value="all">全期間</option>
-                        <option value="today">今日</option>
-                        <option value="7days">今週</option>
-                        <option value="month">今月</option>
-                        <option value="year">今年</option>
-                    </select>
+                            <select
+                                className={styles.ctx2Period}
+                                onChange={(e) =>
+                                    setCtx2Period(e.target.value as PeriodType)
+                                }
+                            >
+                                <option value="all">全期間</option>
+                                <option value="today">今日</option>
+                                <option value="7days">今週</option>
+                                <option value="month">今月</option>
+                                <option value="year">今年</option>
+                            </select>
 
-                    <select
-                        className={styles.ctx2Unit}
-                        onChange={(e) =>
-                            setCtx2Unit(e.target.value as UnitType)
-                        }
-                    >
-                        <option value="seconds">秒</option>
-                        <option value="minutes">分</option>
-                        <option value="hours">時間</option>
-                    </select>
+                            <select
+                                className={styles.ctx2Unit}
+                                onChange={(e) =>
+                                    setCtx2Unit(e.target.value as UnitType)
+                                }
+                            >
+                                <option value="seconds">秒</option>
+                                <option value="minutes">分</option>
+                                <option value="hours">時間</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
                 <div className={styles.historyHome}>

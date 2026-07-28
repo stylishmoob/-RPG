@@ -163,37 +163,30 @@ export type StatusRulesDataType = {
     statusRules:StatusRulesType[]
 }
 
-export type Requirements = {
+export type JobRequirementInputType = {
     statusId:string;
     requiredValue:string;
 }
 
-export type editRequirements = {
+export type JobRequirementType = {
     id:string;
+    jobId:string;
     statusId:string;
+    statusName:string;
     requiredValue:string;
     isActive:boolean;
 }
 
 export type JobsType = {
     id:string;
-    job_name:string;
-    is_active:boolean;
-    is_default:boolean;
-}
-
-export type JobRequirementsType = {
-    id:string;
-    job_id:string;
-    required_status_id:string;
-    required_status_name:string;
-    required_status_value:string;
-    is_active:boolean;
+    jobName:string;
+    isActive:boolean;
+    isDefault:boolean;
 }
 
 export type JobsDataType = {
     masterJobs:JobsType[]
-    jobRequirements:JobRequirementsType[]
+    jobRequirements:JobRequirementType[]
     masterStatuses:StatusesType[]
 
 }

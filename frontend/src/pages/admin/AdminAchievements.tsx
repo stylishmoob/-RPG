@@ -30,6 +30,8 @@ function AdminAchievements(){
 
     const [editingId,setEditingId] = useState<string>("");
 
+    const [deleteId,setDeleteId] = useState<string>("");
+
     const [csvFile,setCsvFile] = useState<File | null>(null);
 
      useEffect(() => {
@@ -158,7 +160,52 @@ function AdminAchievements(){
         return result;
     }
 
+    async function deleteAchievementSubmit(achievementId:string){
+        if(achievementId === "") return;
+
+        setDeleteId(achievementId);
+
+        try{
+            await handleDelete(achievementId);
+            await fetchAchievementsData();
+
+            if(editingId === achievementId){
+                setEditingId("");
+                setEditCategoryId("");
+                setEditHours(null);
+                setEditAchievementName("");
+                setEditTitleName("");
+                setEditAchievementIsActive(true);
+            }
+        }catch(error){
+            console.error(error);
+        }finally{
+            setDeleteId("");
+        }
+    }
+
+    async function handleDelete(achievementId:string){
+        const response = await fetch("/api/admin/achievements/delete", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+            },
+            body:JSON.stringify({
+                "achievement_id":achievementId,
+            }),
+        });
+        if(!response.ok){
+            throw new Error("削除リクエストに失敗しました");
+        }
+        const result = await response.json();
+        return result;
+    }
+
     function startEditing(achievement:AchievementsType){
+        if(editingId === achievement.id){
+            setEditingId("");
+            return;
+        }
             setEditingId(achievement.id);
             setEditCategoryId(achievement.category_id);
             setEditHours(achievement.required_hours);
@@ -261,6 +308,7 @@ function AdminAchievements(){
                         <th>称号名</th>
                         <th>有効化・無効化</th>
                         <th>編集・変更</th>
+                        <th>削除</th>
                     </tr>
                 </thead>
 
@@ -272,23 +320,25 @@ function AdminAchievements(){
                          >
                             <td>{achievement.id}</td>
                             <td>
-                                <span>{achievement.category_name}</span>
-                                <select 
-                                    value={editCategoryId}
-                                    disabled={editingId !== achievement.id}
-                                    onChange={(e) => setEditCategoryId(e.target.value)}>
+                                <div className={styles.field}>
+                                    <span>{achievement.category_name}</span>
+                                    <select
+                                        value={editCategoryId}
+                                        disabled={editingId !== achievement.id}
+                                        onChange={(e) => setEditCategoryId(e.target.value)}>
 
-                                    {masterCategories.map((category) => {
-                                        return(
-                                            <option
-                                                key={category.id}
-                                                value={category.id}
-                                            >
-                                                {category.id} : {category.name}
-                                            </option>
-                                        )          
-                                    })}
-                                </select>
+                                        {masterCategories.map((category) => {
+                                            return(
+                                                <option
+                                                    key={category.id}
+                                                    value={category.id}
+                                                >
+                                                    {category.id} : {category.name}
+                                                </option>
+                                            )
+                                        })}
+                                    </select>
+                                </div>
                             </td>
                             <td>
                                 <div className={styles.field}>
@@ -348,7 +398,7 @@ function AdminAchievements(){
                                     onClick={() =>{                                  
                                         startEditing(achievement)
                                     } }>
-                                    編集
+                                    {editingId === achievement.id ? "キャンセル" : "編集"}
                                 </button>
                                 <button 
                                     type="button"
@@ -357,6 +407,16 @@ function AdminAchievements(){
                                         editAchievementSubmit()
                                     }}>
                                     変更
+                                </button>
+                            </td>
+                            <td>
+                                <button
+                                    type="button"
+                                    disabled={deleteId === achievement.id}
+                                    onClick={() =>{
+                                        deleteAchievementSubmit(achievement.id)
+                                    }}>
+                                    削除
                                 </button>
                             </td>
                         </tr>

@@ -25,6 +25,8 @@ function AdminRules(){
 
     const [editingId,setEditingId] = useState<string>("");
 
+    const [deleteId,setDeleteId] = useState<string>("");
+
     const [csvFile,setCsvFile] = useState<File | null>(null);
 
     useEffect(() => {
@@ -146,8 +148,51 @@ function AdminRules(){
         const result = await response.json();
         return result;
     }
+
+    async function deleteStatusRulesSubmit(statusRuleId:string){
+        if(statusRuleId === "")return;
+
+        try{
+            setDeleteId(statusRuleId);
+            await handleDelete(statusRuleId);
+            await fetchStatusRulesData();
+
+            if(editingId === statusRuleId){
+                setEditingId("");
+                setEditCategoryId("");
+                setEditStatusId("");
+                setEditGainHours(null);
+                setEditStatusRulesIsActive(true);
+            }
+        }catch(error){
+            console.error(error);
+        }finally{
+            setDeleteId("");
+        }
+    }
+
+    async function handleDelete(statusRuleId:string){
+        const response = await fetch("/api/admin/status_rules/delete", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+            },
+            body:JSON.stringify({
+                "id":statusRuleId,
+            }),
+        });
+        if(!response.ok){
+            throw new Error("削除に失敗しました");
+        }
+        const result = await response.json();
+        return result;
+    }
     
      function startEditing(statusRule:StatusRulesType){
+        if(editingId === statusRule.id){
+            setEditingId("");
+            return;
+        }
             setEditingId(statusRule.id);
             setEditCategoryId(statusRule.category_id);
             setEditStatusId(statusRule.status_id);
@@ -248,6 +293,7 @@ function AdminRules(){
                         <th>上昇量/h</th>
                         <th>有効化・無効化</th>
                         <th>編集・変更</th>
+                        <th>削除</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -329,7 +375,7 @@ function AdminRules(){
                                     onClick={() =>{                                  
                                         startEditing(statusRule)
                                     } }>
-                                    編集
+                                    {editingId === statusRule.id ? "キャンセル" : "編集"}
                                 </button>
                                 <button 
                                     type="button"
@@ -339,6 +385,16 @@ function AdminRules(){
                                     }}>
                                     変更
                                 </button>
+                                </td>
+                                <td>
+                                    <button
+                                        type="button"
+                                        disabled={deleteId === statusRule.id}
+                                        onClick={() =>{
+                                            deleteStatusRulesSubmit(statusRule.id)
+                                        }}>
+                                        削除
+                                    </button>
                                 </td>
                             </tr>
                     )

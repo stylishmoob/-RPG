@@ -70,6 +70,97 @@ def edit_master_category(category_id,category_name,is_active):
     finally:
         conn.close()
 
+def delete_master_category(category_id):
+    conn=sqlite3.connect(DB_NAME)
+    cur=conn.cursor()
+
+    try:
+        cur.execute("""
+            SELECT id
+            FROM master_categories
+            WHERE id=?
+            """,(category_id,))
+
+        category = cur.fetchone()
+
+        if category is None:
+            conn.rollback()
+            return {
+                "deleted": False,
+                "category_id": category_id,
+            }
+
+        cur.execute("""
+            SELECT id
+            FROM user_categories
+            WHERE master_category_id=?
+            """,(category_id,))
+
+        user_category_ids = [row[0] for row in cur.fetchall()]
+
+        deleted_time_logs = 0
+
+        if user_category_ids:
+            placeholders = ",".join("?" for _ in user_category_ids)
+            cur.execute(f"""
+                DELETE FROM time_logs
+                WHERE category_id IN ({placeholders})
+                """,user_category_ids)
+            deleted_time_logs = cur.rowcount
+
+        cur.execute("""
+            DELETE FROM user_achievements
+            WHERE achievement_id IN (
+                SELECT id
+                FROM master_achievements
+                WHERE required_category_id=?
+            )
+            """,(category_id,))
+        deleted_user_achievements = cur.rowcount
+
+        cur.execute("""
+            DELETE FROM master_achievements
+            WHERE required_category_id=?
+            """,(category_id,))
+        deleted_achievements = cur.rowcount
+
+        cur.execute("""
+            DELETE FROM status_up_rules
+            WHERE category_id=?
+            """,(category_id,))
+        deleted_status_rules = cur.rowcount
+
+        cur.execute("""
+            DELETE FROM user_categories
+            WHERE master_category_id=?
+            """,(category_id,))
+        deleted_user_categories = cur.rowcount
+
+        cur.execute("""
+            DELETE FROM master_categories
+            WHERE id=?
+            """,(category_id,))
+        deleted_categories = cur.rowcount
+
+        conn.commit()
+
+        return {
+            "deleted": deleted_categories > 0,
+            "category_id": category_id,
+            "deleted_time_logs": deleted_time_logs,
+            "deleted_user_achievements": deleted_user_achievements,
+            "deleted_achievements": deleted_achievements,
+            "deleted_status_rules": deleted_status_rules,
+            "deleted_user_categories": deleted_user_categories,
+        }
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
 def import_master_category(cur,category_name):
     cur.execute("""
         INSERT OR IGNORE INTO master_categories(category_name)

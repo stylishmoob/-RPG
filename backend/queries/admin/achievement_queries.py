@@ -84,6 +84,53 @@ def edit_master_achievement(achievement_id,required_category_id,
     finally:
         conn.close()
 
+def delete_master_achievement(achievement_id):
+    conn=sqlite3.connect(DB_NAME)
+    cur=conn.cursor()
+
+    try:
+        cur.execute("""
+            SELECT id
+            FROM master_achievements
+            WHERE id=?
+            """,(achievement_id,))
+
+        achievement = cur.fetchone()
+
+        if achievement is None:
+            conn.rollback()
+            return {
+                "deleted": False,
+                "achievement_id": achievement_id,
+            }
+
+        cur.execute("""
+            DELETE FROM user_achievements
+            WHERE achievement_id=?
+            """,(achievement_id,))
+        deleted_user_achievements = cur.rowcount
+
+        cur.execute("""
+            DELETE FROM master_achievements
+            WHERE id=?
+            """,(achievement_id,))
+        deleted_achievements = cur.rowcount
+
+        conn.commit()
+
+        return {
+            "deleted": deleted_achievements > 0,
+            "achievement_id": achievement_id,
+            "deleted_user_achievements": deleted_user_achievements,
+        }
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
 def import_achievement_csv(csv_file):
     if csv_file is None:
         return ({

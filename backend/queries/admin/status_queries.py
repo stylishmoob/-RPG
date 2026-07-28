@@ -63,6 +63,67 @@ def edit_master_status(status_id,status_name,default_value,status_type,is_active
     finally:
         conn.close()
 
+def delete_master_status(status_id):
+    conn=sqlite3.connect(DB_NAME)
+    cur=conn.cursor()
+
+    try:
+        cur.execute("""
+            SELECT id
+            FROM master_statuses
+            WHERE id=?
+            """,(status_id,))
+
+        status = cur.fetchone()
+
+        if status is None:
+            conn.rollback()
+            return {
+                "deleted": False,
+                "status_id": status_id,
+            }
+
+        cur.execute("""
+            DELETE FROM status_up_rules
+            WHERE status_id=?
+            """,(status_id,))
+        deleted_status_rules = cur.rowcount
+
+        cur.execute("""
+            DELETE FROM job_requirements
+            WHERE required_status_id=?
+            """,(status_id,))
+        deleted_job_requirements = cur.rowcount
+
+        cur.execute("""
+            DELETE FROM user_statuses
+            WHERE status_id=?
+            """,(status_id,))
+        deleted_user_statuses = cur.rowcount
+
+        cur.execute("""
+            DELETE FROM master_statuses
+            WHERE id=?
+            """,(status_id,))
+        deleted_statuses = cur.rowcount
+
+        conn.commit()
+
+        return {
+            "deleted": deleted_statuses > 0,
+            "status_id": status_id,
+            "deleted_status_rules": deleted_status_rules,
+            "deleted_job_requirements": deleted_job_requirements,
+            "deleted_user_statuses": deleted_user_statuses,
+        }
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
 def get_status_id(status_name):
     conn=sqlite3.connect(DB_NAME)
     conn.row_factory=sqlite3.Row

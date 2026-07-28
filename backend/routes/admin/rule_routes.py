@@ -5,6 +5,7 @@ from backend.utils.decorators import admin_required
 from backend.queries.admin.rule_queries import(
     get_master_status_rules,
     add_status_rules,
+    delete_status_rule,
     edit_status_rules,
     import_status_rules_csv
 )
@@ -72,6 +73,19 @@ def api_admin_add_status_rules():
     gain_per_hours=data["gain_per_hours"]
 
     add_status_rules(category_id,status_id,gain_per_hours)
+
+    return jsonify({
+        "success":True
+    })
+
+@admin_rule_bp.post("/delete")
+@admin_required
+def api_admin_delete_status_rules():
+    data=request.get_json()
+
+    status_rules_id=data["id"]
+
+    delete_status_rule(status_rules_id)
 
     return jsonify({
         "success":True

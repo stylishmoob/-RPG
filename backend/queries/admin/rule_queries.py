@@ -84,6 +84,24 @@ def delete_status_rules(category_id,status_id):
     finally:
         conn.close()
 
+def delete_status_rule(status_rules_id):
+    conn=sqlite3.connect(DB_NAME)
+    cur=conn.cursor()
+
+    try:
+        cur.execute("""
+            DELETE FROM status_up_rules
+            WHERE id=?""",(status_rules_id,))
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
 def edit_status_rules(status_rules_id,category_id,status_id,gain_per_hours,status_rules_is_active):
     conn=sqlite3.connect(DB_NAME)
     cur=conn.cursor()

@@ -25,6 +25,8 @@ function AdminStatuses(){
 
     const [editingId,setEditingId] = useState<string>("");
 
+    const [deleteId,setDeleteId] = useState<string>("");
+
     const [csvFile, setCsvFile] = useState<File | null>(null);
 
     useEffect(() => {
@@ -148,7 +150,51 @@ function AdminStatuses(){
         return result;
     }
 
+    async function deleteStatusSubmit(statusId:string){
+        if(statusId === "") return;
+
+        setDeleteId(statusId);
+
+        try{
+            await handleDelete(statusId);
+            await fetchStatusesData();
+
+            if(editingId === statusId){
+                setEditingId("");
+                setEditStatusName("");
+                setEditStatusType("front");
+                setEditStatusDefaultValue("");
+                setEditStatusIsActive(true);
+            }
+        }catch(error){
+            console.error(error);
+        }finally{
+            setDeleteId("");
+        }
+    }
+
+    async function handleDelete(statusId:string){
+        const response = await fetch("/api/admin/statuses/delete", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+            },
+            body:JSON.stringify({
+                "status_id":statusId,
+            }),
+        });
+        if(!response.ok){
+            throw new Error("削除リクエストに失敗しました");
+        }
+        const result = await response.json();
+        return result;
+    }
+
     function startEditing(status:StatusesType){
+        if(editingId === status.id){
+            setEditingId("");
+            return;
+        }
         setEditingId(status.id);
         setEditStatusName(status.name);
         setEditStatusDefaultValue(status.default_value);
@@ -235,6 +281,7 @@ function AdminStatuses(){
                         <th>ステータスタイプ</th>
                         <th>有効・無効</th>
                         <th>編集・変更</th>
+                        <th>削除</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -304,7 +351,7 @@ function AdminStatuses(){
                                 onClick={() =>{                                  
                                     startEditing(status)
                                 } }>
-                                編集
+                                {editingId === status.id ? "キャンセル" : "編集"}
                             </button>
                             <button 
                                 type="button"
@@ -313,6 +360,16 @@ function AdminStatuses(){
                                     editStatusSubmit()
                                 }}>
                                 変更
+                            </button>
+                        </td>
+                        <td>
+                            <button
+                                type="button"
+                                disabled={deleteId === status.id}
+                                onClick={() =>{
+                                    deleteStatusSubmit(status.id)
+                                }}>
+                                削除
                             </button>
                         </td>
                         </tr>

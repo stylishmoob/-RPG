@@ -17,6 +17,8 @@ function AdminCategories(){
 
     const [editingId,setEditingId] = useState<string>("");
 
+    const [deleteId,setDeleteId] = useState<string>("");
+
     const [csvFile,setCsvFile] = useState<File | null>(null);
 
     useEffect(() => {
@@ -121,7 +123,49 @@ function AdminCategories(){
         return result;
     }
 
+    async function deleteCategorySubmit(categoryId:string){
+        if(categoryId === "") return;
+
+        setDeleteId(categoryId);
+
+        try{
+            await handleDelete(categoryId);
+            await fetchMasterCategoriesData();
+
+            if(editingId === categoryId){
+                setEditingId("");
+                setEditCategoryName("");
+                setEditCategoryIsActive(true);
+            }
+        }catch(error){
+            console.error(error);
+        }finally{
+            setDeleteId("");
+        }
+    }
+
+    async function handleDelete(categoryId:string){
+        const response = await fetch("/api/admin/categories/delete", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+            },
+            body:JSON.stringify({
+                "category_id":categoryId,
+            }),
+        });
+        if(!response.ok){
+            throw new Error("削除リクエストに失敗しました");
+        }
+        const result = await response.json();
+        return result;
+    }
+
     function startEditing(category:MasterCategoriesType){
+        if(editingId === category.id){
+            setEditingId("");
+            return;
+        }
         setEditingId(category.id);
         setEditCategoryName(category.name); 
         setEditCategoryIsActive(category.is_active);
@@ -189,6 +233,7 @@ function AdminCategories(){
                         <th>カテゴリー名</th>
                         <th>有効化・無効化</th>
                         <th>編集・変更</th>
+                        <th>削除</th>
                     </tr>
                 </thead>
 
@@ -233,7 +278,7 @@ function AdminCategories(){
                                     onClick={() =>{                                  
                                         startEditing(category)
                                     } }>
-                                    編集
+                                    {editingId === category.id ? "キャンセル" : "編集"}
                                 </button>
                                 <button 
                                     type="button"
@@ -242,6 +287,16 @@ function AdminCategories(){
                                         editCategorySubmit()
                                     }}>
                                     変更
+                                </button>
+                            </td>
+                            <td>
+                                <button
+                                    type="button"
+                                    disabled={deleteId === category.id}
+                                    onClick={() =>{
+                                        deleteCategorySubmit(category.id)
+                                    }}>
+                                    削除
                                 </button>
                             </td>
                         </tr>

@@ -835,7 +835,8 @@
     transition:transform var(--transition-main),box-shadow var(--transition-main),filter var(--transition-main);
 }
 
-.menuBox a{
+.menuBox a,
+.admin a{
     flex:1 1 160px;
     color:var(--text-title);
     text-shadow:2px 2px 0 rgba(0,0,0,.32);

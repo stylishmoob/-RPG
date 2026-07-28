@@ -128,11 +128,101 @@ def edit_job_requirement(cur,job_id,requirements):
         WHERE id=?
         AND job_id=?""",(
             req["statusId"],
-            req["statusValue"],
+            req["requiredValue"],
             req["isActive"],
             req["id"],
             job_id,
         ))
+
+
+def delete_admin_job(job_id):
+    conn=sqlite3.connect(DB_NAME)
+    cur=conn.cursor()
+
+    try:
+        cur.execute("""
+            SELECT id
+            FROM master_jobs
+            WHERE id<>?
+            AND is_active=1
+            ORDER BY is_default DESC,id
+            LIMIT 1""",(job_id,))
+        fallback_job=cur.fetchone()
+
+        cur.execute("""
+            SELECT COUNT(*)
+            FROM users
+            WHERE current_job_id=?""",(job_id,))
+        current_job_user_count=cur.fetchone()[0]
+
+        if current_job_user_count > 0 and fallback_job is None:
+            raise ValueError("削除後に設定できる職業がありません")
+
+        if fallback_job is not None:
+            cur.execute("""
+                UPDATE users
+                SET current_job_id=?
+                WHERE current_job_id=?""",(fallback_job[0],job_id))
+            updated_current_jobs=cur.rowcount
+        else:
+            updated_current_jobs=0
+
+        cur.execute("""
+            DELETE FROM job_requirements
+            WHERE job_id=?""",(job_id,))
+        deleted_job_requirements=cur.rowcount
+
+        cur.execute("""
+            DELETE FROM user_jobs
+            WHERE job_id=?""",(job_id,))
+        deleted_user_jobs=cur.rowcount
+
+        cur.execute("""
+            DELETE FROM master_jobs
+            WHERE id=?""",(job_id,))
+        deleted_jobs=cur.rowcount
+
+        conn.commit()
+
+        return {
+            "deleted": deleted_jobs > 0,
+            "job_id": job_id,
+            "deleted_job_requirements": deleted_job_requirements,
+            "deleted_user_jobs": deleted_user_jobs,
+            "updated_current_jobs": updated_current_jobs,
+        }
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
+
+def delete_job_requirement(requirement_id):
+    conn=sqlite3.connect(DB_NAME)
+    cur=conn.cursor()
+
+    try:
+        cur.execute("""
+            DELETE FROM job_requirements
+            WHERE id=?""",(requirement_id,))
+        deleted_job_requirements=cur.rowcount
+
+        conn.commit()
+
+        return {
+            "deleted": deleted_job_requirements > 0,
+            "requirement_id": requirement_id,
+        }
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
 
 
 def import_jobs_csv(csv_file):

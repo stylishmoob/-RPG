@@ -7,6 +7,8 @@ from backend.queries.admin.job_queries import (
     get_master_jobs,
     add_admin_job,
     edit_admin_job,
+    delete_admin_job,
+    delete_job_requirement,
     import_jobs_csv
 )
 
@@ -32,18 +34,18 @@ def api_admin_jobs():
 
         "masterJobs":[{
             "id":row["id"],
-            "job_name":row["job_name"],
-            "is_active":bool(row["is_active"]),
-            "is_default":bool(row["is_default"]),
+            "jobName":row["job_name"],
+            "isActive":bool(row["is_active"]),
+            "isDefault":bool(row["is_default"]),
          } for row in master_jobs 
         ],
         "jobRequirements":[{
             "id":row["id"],
-            "job_id":row["job_id"],
-            "required_status_id":row["required_status_id"],
-            "required_status_name":row["required_status_name"],
-            "required_status_value":row["required_status_value"],
-            "is_active":bool(row["is_active"]),
+            "jobId":row["job_id"],
+            "statusId":row["required_status_id"],
+            "statusName":row["required_status_name"],
+            "requiredValue":row["required_status_value"],
+            "isActive":bool(row["is_active"]),
         } for row in job_requirements
         ],
          "masterStatuses":[
@@ -62,7 +64,7 @@ def api_admin_jobs():
 def api_admin_add_job():
     data=request.get_json()
 
-    job_name=data["job_name"]
+    job_name=data.get("jobName", data.get("job_name"))
     requirements=data["requirements"]
 
     add_admin_job(job_name,requirements)
@@ -72,15 +74,63 @@ def api_admin_add_job():
     }
     )
 
+@admin_job_bp.post("/delete")
+@admin_required
+def api_admin_delete_job():
+    data=request.get_json()
+
+    job_id=data.get("jobId", data.get("job_id"))
+
+    if job_id is None:
+        return jsonify({
+            "success":False,
+            "message":"jobIdがありません",
+        }), 400
+
+    try:
+        result=delete_admin_job(job_id)
+    except ValueError as error:
+        return jsonify({
+            "success":False,
+            "message":str(error),
+        }), 400
+
+    return jsonify({
+        "success":True,
+        **result,
+    }
+    )
+
+@admin_job_bp.post("/requirements/delete")
+@admin_required
+def api_admin_delete_job_requirement():
+    data=request.get_json()
+
+    requirement_id=data.get("requirementId", data.get("requirement_id"))
+
+    if requirement_id is None:
+        return jsonify({
+            "success":False,
+            "message":"requirementIdがありません",
+        }), 400
+
+    result=delete_job_requirement(requirement_id)
+
+    return jsonify({
+        "success":True,
+        **result,
+    }
+    )
+
 @admin_job_bp.post("/edit")
 @admin_required
 def api_admin_edit_job():
     data=request.get_json()
 
-    job_id=data["job_id"]
-    job_name=data["job_name"]
-    is_active=data["is_active"]
-    is_default=data["is_default"]
+    job_id=data.get("jobId", data.get("job_id"))
+    job_name=data.get("jobName", data.get("job_name"))
+    is_active=data.get("isActive", data.get("is_active"))
+    is_default=data.get("isDefault", data.get("is_default"))
     requirements=data["requirements"]
     
     edit_admin_job(job_id,job_name,is_active,is_default,requirements)

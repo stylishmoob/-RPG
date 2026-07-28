@@ -5,6 +5,8 @@
     --gold:#F2B84B;
     --gold-light:#FFE08A;
     --teal:#62CDBB;
+    --blue:#6CA8FF;
+    --green:#52C56E;
 
 
     --bg-main:#303454;
@@ -461,12 +463,27 @@
 
 }
 
+.cardContent{
+    position:relative;
+    z-index:1;
+}
+
+.profileBox .cardInner{
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    padding:24px 28px 30px;
+}
+
 .profileMain{
     display:grid;
-    gap:10px;
-    grid-template-columns: 300px 1fr;
+    column-gap:32px;
+    row-gap:12px;
+    grid-template-columns:300px minmax(0,1fr);
+    grid-template-rows:repeat(2,minmax(120px,auto));
+    align-items:center;
     font-family: var(--font-main);
-    margin: 20px;
+    margin:0;
     
     grid-template-areas: 
         "image name"
@@ -491,20 +508,20 @@
 
 .userName{
     grid-area: name;
+    align-self:center;
+    min-width:0;
     text-align: left;
-    margin-top: auto;
-    margin-left:30px;
-    margin-right:10px;
+    margin:0 14px 0 0;
     color:var(--text-main);
     letter-spacing: 1px;
 }
 
 .jobName{
     grid-area: job;
+    align-self:center;
+    min-width:0;
     text-align: left;
-    margin-top: auto;
-    margin-left:30px;
-    margin-right:10px;
+    margin:0 14px 0 0;
     color:var(--text-main);
     letter-spacing: 1px;
 }
@@ -514,8 +531,10 @@
     position:relative;
     isolation:isolate;
     z-index:0;
-    font-size:20px;
-    font-family: 500;
+    padding-bottom:4px;
+    font-size:30px;
+    font-weight:700;
+    line-height:1.2;
 }
 
 .nameLabel::after,
@@ -541,8 +560,13 @@
     position:relative;
     isolation:isolate;
     z-index:0;
-    font-size:30px;
-    font-weight: 700;
+    padding:5px 0 4px;
+    overflow:hidden;
+    font-size:clamp(40px,4.4vw,52px);
+    font-weight: 900;
+    line-height:1.2;
+    text-overflow:ellipsis;
+    white-space:nowrap;
 }
 
 /* EXP */
@@ -550,10 +574,8 @@
     grid:exp;
     display:grid;
     gap:0px;
-    margin-top: -10px;
-    margin-left: 250px;
-    margin-right: 30px;
-    grid-template-columns: 200px 1fr;
+    margin:10px 18px 0 250px;
+    grid-template-columns:220px 1fr;
     
     grid-template-areas: 
         "level exptext"
@@ -565,27 +587,28 @@
     grid-area:level;
     margin-left:10px;
     text-align: left;
-    font-size: 60px;
+    font-size: 76px;
     color:var(--text-main);
-    font-weight: 700;
-    letter-spacing: 4px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    line-height:1;
 }
 
 .levelLabel{
-    font-size:40px;
-    font-family: 700;
-    letter-spacing: 4px;
+    font-size:52px;
+    font-weight:900;
+    letter-spacing: 2px;
 }
 
 .expText{
-    margin-top:24px;
+    margin-top:30px;
     grid-area:exptext;
     color:var(--text-main);
 
 
     text-align:right;
-    font-size:20px;
-    font-weight: 500;
+    font-size:26px;
+    font-weight: 700;
     
     letter-spacing: 2px;
 }
@@ -593,7 +616,7 @@
 .expBar{
     grid-area:expbar;
     width:100%;
-    height:20px;
+    height:24px;
     isolation: isolate;
     z-index:0;
 
@@ -654,15 +677,63 @@
     transition:width .35s ease;
 }
 
+.levelUp{
+    color:var(--text-main);
+    font-size:22px;
+    font-weight:900;
+    letter-spacing:1px;
+}
+
 /* Status */
+.statusBox .cardInner{
+    display:flex;
+    min-height:0;
+}
+
+.statusBox .cardContent{
+    display:flex;
+    align-items:center;
+    width:100%;
+    height:100%;
+    min-height:0;
+    padding:24px 16px;
+}
+
+.statusList{
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    width:100%;
+    max-height:100%;
+    gap:10px;
+    overflow-y:auto;
+    padding:4px 6px 4px 0;
+    font-size:20px;
+    scrollbar-color:var(--border) var(--bg-parchant);
+}
+
+.profileBox .statusHp,
+.profileBox .statusMp{
+    grid-template-columns:minmax(64px,110px) minmax(160px,1fr) minmax(86px,110px);
+    margin:8px 18px 0 250px;
+    padding:6px 10px;
+    font-size:24px;
+}
+
+.profileBox .hpBar,
+.profileBox .mpBar{
+    height:20px;
+}
+
 .statusHp,
 .statusMp,
 .statusRow{
     display:grid;
-    
+    grid-template-columns:minmax(58px,96px) minmax(140px,1fr) minmax(72px,100px);
     align-items:center;
     gap:10px;
     min-height:30px;
+    padding:6px 10px;
 }
 
 .hpBar,
@@ -671,12 +742,12 @@
     position:relative;
     width:100%;
     overflow:hidden;
-    background:#D8D3EA;
-    border:1px solid rgba(255,255,255,.7);
+    background:rgba(63,55,41,.22);
+    border:1px solid var(--border-gold);
     border-radius:var(--radius-pill);   
     box-shadow:
         inset 0 2px 4px rgba(0,0,0,.18),
-        0 2px 4px rgba(0,0,0,.08);
+        0 1px 0 rgba(255,255,255,.55);
 }
 
 .hpBar,
@@ -701,15 +772,15 @@
 }
 
 .hpFill{
-    background:linear-gradient(90deg,#8BF28F,var(--green));
+    background:linear-gradient(90deg,#9BE39B,var(--green));
 }
 
 .mpFill{
-    background:linear-gradient(90deg,#74D9FF,var(--blue));
+    background:linear-gradient(90deg,#83DDD0,var(--teal));
 }
 
 .statusFill{
-    background:linear-gradient(90deg,#C5B2FF,#8F6CFF);
+    background:linear-gradient(90deg,var(--gold-light),var(--gold));
 }
 
 .hpFill::after,
@@ -727,17 +798,22 @@
 
 .statusName{
     min-width:0;
-    color: #020005;
+    color:var(--border);
     font-weight:900;
     text-align:right;
+    overflow-wrap:anywhere;
+    line-height:1.2;
+    text-shadow:0 1px 0 rgba(255,255,255,.5);
 }
 
 .statusValue{
-    color:#020005;
+    color:var(--border);
     font-weight:900;
     text-align:center;
     font-variant-numeric:tabular-nums;
     margin-left:-10px;
+    white-space:nowrap;
+    text-shadow:0 1px 0 rgba(255,255,255,.5);
 }
 
 #status-list>div:not([class]){

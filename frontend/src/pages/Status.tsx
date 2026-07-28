@@ -143,45 +143,45 @@ function Status() {
                 <div className={[styles.tabContent, styles.active].join(" ")} id="status-box">
                     <div className={styles.statusBox}>
                         <div className={styles.cardInner}>
-                            <div id="status-list" className={styles.statusList}>
-                                <div id="status-hp" className={styles.statusHp}>
-                                    <span className={styles.statusName}>{HP.name}</span>
-                                    <div className={styles.hpBar}>
-                                        <div className={styles.hpFill}></div>
+                            <div className={styles.cardContent}>
+                                <div id="status-list" className={styles.statusList}>
+                                    <div id="status-hp" className={styles.statusHp}>
+                                        <span className={styles.statusName}>{HP.name}</span>
+                                        <div className={styles.hpBar}>
+                                            <div className={styles.hpFill}></div>
+                                        </div>
+                                        <span id="hp-value" className={styles.hpValue}>{HP.value}/{HP.value}</span>
                                     </div>
-                                    <span id="hp-value" className={styles.hpValue}>{HP.value}/{HP.value}</span>
-                                </div>
-                                <div id="status-mp" className={styles.statusMp}>
-                                    <span className={styles.statusName}>{MP.name}</span>
-                                    <div className={styles.mpBar}>
-                                        <div className={styles.mpFill}></div>
+                                    <div id="status-mp" className={styles.statusMp}>
+                                        <span className={styles.statusName}>{MP.name}</span>
+                                        <div className={styles.mpBar}>
+                                            <div className={styles.mpFill}></div>
+                                        </div>
+                                        <span id="mp-value" className={styles.mpValue}>{MP.value}/{MP.value}</span>
                                     </div>
-                                    <span id="mp-value" className={styles.mpValue}>{MP.value}/{MP.value}</span>
-                                </div>
 
-                                {status.filter(s =>
-                                    s.name !== "HP" &&
-                                    s.name !== "MP" &&
-                                    s.type === "front"
-                                )
-                                .map((s) => {
-                                    const status_percent = Math.max(0,Math.min(s.value,100));
-                                    
-                                    
-                                    return(
-                                            <div className={styles.statusRow} key={s.id}>
-                                                <div className={styles.statusName}>{s.name}</div>
-                                                <div className={styles.statusBar}>
-                                                    <div className={styles.statusFill} style={{ width: `${status_percent}%`}} ></div>
+                                    {status.filter(s =>
+                                        s.name !== "HP" &&
+                                        s.name !== "MP"
+                                    )
+                                    .map((s) => {
+                                        const status_percent = Math.max(0,Math.min(s.value,100));
+
+                                        return(
+                                                <div className={styles.statusRow} key={s.id}>
+                                                    <div className={styles.statusName}>{s.name}</div>
+                                                    <div className={styles.statusBar}>
+                                                        <div className={styles.statusFill} style={{ width: `${status_percent}%`}} ></div>
+                                                    </div>
+                                                    <div>
+                                                        <span className={styles.statusValue}>{s.value}</span>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <span className={styles.statusValue}>{s.value}</span>
-                                                </div>
-                                            </div>    
-                                    );
+                                        );
+                                    }
+                                    )
                                 }
-                                )       
-                            }
+                                </div>
                             </div>
                         </div>
                     </div>

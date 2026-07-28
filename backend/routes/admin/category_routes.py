@@ -6,6 +6,7 @@ from backend.queries.admin.category_queries import(
     get_master_categories,
     add_master_category,
     edit_master_category,
+    delete_master_category,
     import_category_csv,
 )
 
@@ -59,6 +60,18 @@ def api_admin_edit_categories():
         "success":True,
     })
 
+@admin_category_bp.post("/delete")
+@admin_required
+def api_admin_delete_categories():
+    data=request.get_json()
+    category_id=data["category_id"]
+    result=delete_master_category(category_id)
+
+    return jsonify({
+        "success":True,
+        **result,
+    })
+
 @admin_category_bp.post("/import")
 @admin_required
 def api_admin_import_categories():
@@ -90,4 +103,3 @@ def api_admin_import_categories():
             "success": False,
             "message": "CSVの取り込みに失敗しました",
         }), 500
-    

@@ -6,6 +6,7 @@ from backend.queries.admin.achievement_queries import(
     get_master_achievements,
     add_master_achievement,
     edit_master_achievement,
+    delete_master_achievement,
     import_achievement_csv,
 )
 
@@ -84,6 +85,18 @@ def api_admin_edit_achievements():
 
     return jsonify({
         "success":True,
+    })
+
+@admin_achievement_bp.post("/delete")
+@admin_required
+def api_admin_delete_achievements():
+    data=request.get_json()
+    achievement_id=data["achievement_id"]
+    result=delete_master_achievement(achievement_id)
+
+    return jsonify({
+        "success":True,
+        **result,
     })
 
 @admin_achievement_bp.post("/import")

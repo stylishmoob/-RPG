@@ -138,12 +138,15 @@
 }
 
 .table th:nth-child(2),
-.table td:nth-child(2),
+.table td:nth-child(2) {
+    width: 200px;
+}
+
 .table th:nth-child(4),
 .table td:nth-child(4),
 .table th:nth-child(5),
 .table td:nth-child(5) {
-    width: 200px;
+    width: 320px;
 }
 
 .table th:nth-child(3),
@@ -151,7 +154,9 @@
 .table th:nth-child(6),
 .table td:nth-child(6),
 .table th:nth-child(7),
-.table td:nth-child(7) {
+.table td:nth-child(7),
+.table th:nth-child(8),
+.table td:nth-child(8) {
     width: 60px;
     text-align: center;
 }
@@ -161,9 +166,11 @@
     align-items: center;
     gap: 8px;
     min-height: 1.45em;
+    flex-wrap: nowrap;
 }
 
 .field span {
+    flex: 0 0 auto;
     line-height: 1.45;
 }
 
@@ -182,6 +189,24 @@
 
 .table td:nth-child(3) input[type="text"] {
     width: 60px;
+}
+
+.table td:nth-child(4) .field,
+.table td:nth-child(5) .field {
+    width: 100%;
+}
+
+.table td:nth-child(4) .field span,
+.table td:nth-child(5) .field span {
+    max-width: 145px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.table td:nth-child(4) .field input,
+.table td:nth-child(5) .field input {
+    flex: 0 0 160px;
+    margin-left: auto;
 }
 
 .table td:nth-child(3) input[type="text"],
@@ -290,4 +315,16 @@
     display: block;
     margin-left: auto;
     margin-right: auto;
+}
+
+.table .field select {
+    display: inline-block;
+    height: 1.45em;
+    min-height: 0;
+    align-self: center;
+    margin-left: auto;
+    margin-right: 0;
+    box-sizing: border-box;
+    padding: 0 22px 0 6px;
+    line-height: 1.2;
 }
