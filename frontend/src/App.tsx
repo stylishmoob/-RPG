@@ -12,6 +12,7 @@ import AdminAchievements from "./pages/admin/AdminAchievements";
 import AdminJobs from "./pages/admin/AdminJobs";
 import AdminRules from "./pages/admin/AdminRules";
 import AdminStatuses from "./pages/admin/AdminStatuses";
+import AdminUsers from "./pages/admin/AdminUsers";
 
 function App(){
     return (
@@ -30,6 +31,7 @@ function App(){
                     <Route path="jobs" element={<AdminJobs />} />
                     <Route path="achievements" element={<AdminAchievements />} />
                     <Route path="rules" element={<AdminRules />} />
+                    <Route path="users" element={<AdminUsers />} />
                 </Route>
 
             </Routes>

@@ -1,6 +1,7 @@
 export type UserType = {
     id: number;
     name: string;
+    current_job_id: string;
     current_job_name: string;
     level: string;
 };
@@ -12,6 +13,7 @@ export type ExpType = {
 };
 
 export type JobType = {
+    id: string;
     name: string | null;
 };
 
@@ -88,7 +90,7 @@ export type CategoryDataType = {
 export type StatusDataType = {
     user:UserType;
     exp:ExpType;
-    job:JobType;
+    job:JobType[];
     status:StatusType[];
     achievements:AchievementType[];
 };
@@ -189,5 +191,18 @@ export type JobsDataType = {
     jobRequirements:JobRequirementType[]
     masterStatuses:StatusesType[]
 
+}
+
+export type AdminUserType = {
+    id:string;
+    username:string;
+    userLevel:string;
+    userCurrentJob:string | null;
+    isAdmin:boolean;
+    isActive:boolean;
+}
+
+export type AdminUsersDataType = {
+    users:AdminUserType[];
 }
 

@@ -30,6 +30,48 @@ def get_user_jobs(user_id):
     finally:
         conn.close()
 
+def update_current_job(user_id,current_job_id):
+    conn=sqlite3.connect(DB_NAME)
+    cur=conn.cursor()
+
+    try:
+        cur.execute("""
+            SELECT 1
+            FROM user_jobs
+            JOIN master_jobs
+            ON user_jobs.job_id=master_jobs.id
+            WHERE user_jobs.user_id=?
+            AND user_jobs.job_id=?
+            AND master_jobs.is_active=1
+            """,(user_id,current_job_id))
+
+        if cur.fetchone() is None:
+            conn.rollback()
+            return {
+                "updated": False,
+                "reason": "job_not_owned",
+            }
+
+        cur.execute("""
+            UPDATE users
+            SET current_job_id=?
+            WHERE id=?
+            """,(current_job_id,user_id))
+
+        conn.commit()
+
+        return {
+            "updated": cur.rowcount > 0,
+            "current_job_id": current_job_id,
+        }
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
 def check_user_job(user_id):
     conn=sqlite3.connect(DB_NAME)
     conn.row_factory=sqlite3.Row
@@ -74,9 +116,9 @@ def check_user_job(user_id):
         for job_id,requirements in requirements_by_job.items():
             ok = True
             for req in requirements:
-                user_value=user_status.get(req["status_id"],0)
+                user_value=user_status.get(req["required_status_id"],0)
 
-                if user_value < req["required_value"]:
+                if user_value < req["required_status_value"]:
                     ok = False
                     break
 
@@ -90,7 +132,7 @@ def check_user_job(user_id):
             
         conn.commit()
 
-        # return new_job_ids
+        return new_job_ids
     
     except Exception:
         conn.rollback()

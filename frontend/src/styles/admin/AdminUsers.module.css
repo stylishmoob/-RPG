@@ -1,0 +1,186 @@
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.page > * {
+    margin-left: 20px;
+}
+
+.table {
+    width: auto;
+    max-width: 100%;
+    margin-right: 20px;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    line-height: 1.2;
+}
+
+.table th,
+.table td {
+    padding: 7px 10px;
+    border: 1px solid #3a4558;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.table th:nth-child(1),
+.table td:nth-child(1) {
+    width: 40px;
+    text-align: center;
+}
+
+.table th:nth-child(2),
+.table td:nth-child(2) {
+    width: 220px;
+}
+
+.table th:nth-child(3),
+.table td:nth-child(3) {
+    width: 90px;
+    text-align: center;
+}
+
+.table th:nth-child(4),
+.table td:nth-child(4) {
+    width: 220px;
+}
+
+.table th:nth-child(5),
+.table td:nth-child(5),
+.table th:nth-child(6),
+.table td:nth-child(6) {
+    width: 80px;
+    text-align: center;
+}
+
+.table th:nth-child(7),
+.table td:nth-child(7) {
+    width: 120px;
+    text-align: center;
+}
+
+.table th:nth-child(8),
+.table td:nth-child(8) {
+    width: 120px;
+    text-align: center;
+}
+
+.table select {
+    width: 72px;
+    box-sizing: border-box;
+    padding: 4px 22px 4px 8px;
+    color: #f4f8ff;
+    background-color: #172033;
+    background-image:
+        linear-gradient(45deg, transparent 50%, #9fb4d2 50%),
+        linear-gradient(135deg, #9fb4d2 50%, transparent 50%);
+    background-position: calc(100% - 12px) 50%, calc(100% - 7px) 50%;
+    background-repeat: no-repeat;
+    background-size: 5px 5px;
+    border: 1px solid #4a5d7a;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 5%);
+    cursor: pointer;
+    transition: background-color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, transform 0.12s ease;
+}
+
+.table select:hover:not(:disabled) {
+    background-color: #1f2d44;
+    border-color: #6f87ad;
+    box-shadow: inset 0 0 0 1px rgb(126 163 216 / 20%);
+}
+
+.table select:focus,
+.table select:focus-visible {
+    background-color: #223552;
+    border-color: #7da2d6;
+    box-shadow: 0 0 0 3px rgb(61 103 165 / 24%);
+    outline: none;
+}
+
+.table select:active:not(:disabled) {
+    background-color: #2b4770;
+    border-color: #8db8f2;
+    transform: translateY(1px);
+}
+
+.table select:disabled {
+    color: #8c98ad;
+    background-color: #121a28;
+    background-image:
+        linear-gradient(45deg, transparent 50%, #617086 50%),
+        linear-gradient(135deg, #617086 50%, transparent 50%);
+    border-color: #2f3c50;
+    box-shadow: none;
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+.table select option {
+    color: #f4f8ff;
+    background-color: #172033;
+}
+
+.resetButton {
+    min-width: 82px;
+    padding: 5px 10px;
+    color: #ffffff;
+    background: linear-gradient(180deg, #8d4d52, #63353d);
+    border: 1px solid #b97878;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.16s ease, box-shadow 0.16s ease, transform 0.12s ease;
+}
+
+.resetButton:hover:not(:disabled) {
+    background: linear-gradient(180deg, #a55c61, #74414a);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 22%);
+}
+
+.resetButton:active:not(:disabled) {
+    background: linear-gradient(180deg, #744149, #563039);
+    transform: translateY(1px);
+}
+
+.resetButton:disabled {
+    color: #9da7b8;
+    background: #263042;
+    border-color: #3a4558;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.deleteButton {
+    min-width: 82px;
+    padding: 5px 10px;
+    color: #ffffff;
+    background: linear-gradient(180deg, #7c3540, #562530);
+    border: 1px solid #b56570;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.16s ease, box-shadow 0.16s ease, transform 0.12s ease;
+}
+
+.deleteButton:hover:not(:disabled) {
+    background: linear-gradient(180deg, #93434f, #67303b);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 22%);
+}
+
+.deleteButton:active:not(:disabled) {
+    background: linear-gradient(180deg, #66303a, #4b232d);
+    transform: translateY(1px);
+}
+
+.deleteButton:disabled {
+    color: #9da7b8;
+    background: #263042;
+    border-color: #3a4558;
+    box-shadow: none;
+    cursor: not-allowed;
+}

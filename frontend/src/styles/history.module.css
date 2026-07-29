@@ -34,7 +34,7 @@
 :global(body){
     margin:0;
     min-height:100vh;
-    padding:30px 20px;
+    padding:24px 12px;
     color:var(--text-main);
     font-family:var(--font-main);
     line-height:1.6;
@@ -45,10 +45,20 @@
     );
 }
 
+.main{
+    width:100%;
+}
+
+.mainInner{
+    width:min(1360px,calc(100vw - 24px));
+    margin:0 auto;
+}
+
 .card{
     position:relative;
-    max-width:980px;
-    margin:0 auto 30px;
+    width:100%;
+    max-width:none;
+    margin:0 auto 34px;
     padding:6px;
     overflow:visible;
     isolation:isolate;
@@ -114,7 +124,7 @@
 }
 
 .cardContent{
-    padding:24px;
+    padding:34px 38px 36px;
 }
 
 .cardInner > *{
@@ -123,8 +133,9 @@
 }
 
 .card h2{
-    margin:0 0 18px;
+    margin:0 0 22px;
     color:var(--text-main);
+    font-size:34px;
     text-align:center;
     letter-spacing:.04em;
     text-shadow:1px 1px 0 rgba(255,255,255,.45);
@@ -132,7 +143,7 @@
 
 .chartFrame{
     position:relative;
-    margin-top:20px;
+    margin-top:22px;
     padding:6px;
     overflow:visible;
     isolation:isolate;
@@ -183,7 +194,7 @@
 .chartInner{
     position:relative;
     z-index:3;
-    padding:14px;
+    padding:20px;
 
     background-color:var(--bg-parchment);
     background-image:var(--parchment-image);
@@ -199,7 +210,8 @@
     z-index:1;
     display:block;
     width:100%;
-    max-height:420px;
+    min-height:430px;
+    max-height:560px;
 }
 
 .card form{
@@ -211,8 +223,9 @@
 }
 
 .card select{
-    min-width:160px;
-    padding:10px 40px 10px 14px;
+    min-width:190px;
+    margin-top:20px;
+    padding:12px 44px 12px 16px;
     color:var(--text-title);
     background:
         linear-gradient(45deg,transparent 50%,var(--text-title) 50%) right 17px center / 7px 7px no-repeat,
@@ -224,6 +237,8 @@
         inset 0 0 0 2px rgba(63,55,41,.5),
         0 5px 0 rgba(63,55,41,.65);
     font:inherit;
+    font-size:18px;
+    font-weight:700;
     cursor:pointer;
     appearance:none;
     transition:transform .18s ease,filter .18s ease,box-shadow .18s ease;
@@ -401,8 +416,21 @@ outline-offset:3px;
         padding:18px 12px;
     }
 
+    .mainInner{
+        width:100%;
+    }
+
     .cardContent{
         padding:18px;
+    }
+
+    .card h2{
+        font-size:24px;
+    }
+
+    .card canvas{
+        min-height:260px;
+        max-height:340px;
     }
 
     .card select,

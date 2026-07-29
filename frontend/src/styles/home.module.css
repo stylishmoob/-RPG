@@ -367,8 +367,9 @@
 }
 
 .selectBox option{
-    color:var(--text-main);
-    background:var(--bg-parchment);
+    color:var(--text-title);
+    background:var(--bg-tab);
+    font-weight:900;
 }
 
 /* Buttons */

@@ -7,6 +7,7 @@ from backend.queries.statuses_queries import (
 )
 from backend.queries.jobs_queries import (
     get_user_jobs,
+    update_current_job,
 )
 
 from backend.queries.achievements_queries import (
@@ -42,6 +43,8 @@ def api_status():
         "user": {
             "id": user["id"],
             "name": user["user_name"],
+            "current_job_id": user["current_job_id"],
+            "current_job_name": user["current_job_name"],
             "job": user["current_job_name"],
             "level": int(user_level),
         },
@@ -75,3 +78,31 @@ def api_status():
 
         "is_admin": session.get("is_admin") == 1,
 })
+
+@status_bp.post("/api/status/current_job")
+@user_required
+def api_update_current_job():
+    user_id=get_current_user_id()
+    data=request.get_json() or {}
+
+    current_job_id=data.get("currentJobId", data.get("current_job_id"))
+
+    if current_job_id is None:
+        return jsonify({
+            "success": False,
+            "message": "currentJobIdがありません",
+        }), 400
+
+    result=update_current_job(user_id,current_job_id)
+
+    if not result["updated"]:
+        return jsonify({
+            "success": False,
+            "message": "所持していない職業です",
+            **result,
+        }), 400
+
+    return jsonify({
+        "success": True,
+        **result,
+    })

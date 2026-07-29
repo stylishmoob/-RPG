@@ -137,11 +137,24 @@ def get_time_logs(user_id):
     finally:
         conn.close()
 
-def save_time_logs(cur,user_id,selected_category_id,start_time,end_time,duration_seconds):
-    cur.execute("""
-                INSERT INTO time_logs(user_id,category_id,start_time,end_time,duration_seconds)
-                VALUES(?,?,?,?,?)
-                """,(user_id,selected_category_id,start_time,end_time,duration_seconds))    
+def save_time_logs(user_id,selected_category_id,start_time,end_time,duration_seconds):
+    conn=sqlite3.connect(DB_NAME)
+    cur=conn.cursor()
+
+    try:
+        cur.execute("""
+                    INSERT INTO time_logs(user_id,category_id,start_time,end_time,duration_seconds)
+                    VALUES(?,?,?,?,?)
+                    """,(user_id,selected_category_id,start_time,end_time,duration_seconds))
+
+        conn.commit()
+        
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()    
 
 def check_period(period):
     if period =="today":

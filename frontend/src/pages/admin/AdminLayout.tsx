@@ -10,6 +10,7 @@ function AdminLayout(){
             <NavLink className={styles.link} to="jobs">職業</NavLink>
             <NavLink className={styles.link} to="achievements">実績</NavLink>
             <NavLink className={styles.link} to="rules">ルール</NavLink>
+            <NavLink className={styles.link} to="users">ユーザー</NavLink>
             <NavLink className={styles.link} to="/">ホーム</NavLink>
             </nav>
             <main className={styles.content}>

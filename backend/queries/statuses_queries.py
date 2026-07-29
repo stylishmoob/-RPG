@@ -44,6 +44,7 @@ def get_user_by_id(user_id):
             SELECT users.id AS id,
                     user_name,
                     password_hash,
+                    current_job_id,
                     job_name AS current_job_name,
                     user_level,
                     is_admin
@@ -101,8 +102,3 @@ def status_cir(category_id,duration_seconds,user_id):
 
     finally:
         conn.close()
-
-
-
-
-    

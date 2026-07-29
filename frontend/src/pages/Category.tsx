@@ -21,7 +21,7 @@ function Category() {
     },[navigate]);
 
     useEffect(() => {
-        if(user_categories.length === 0) {
+        if(master_categories.length === 0) {
             setSelectedCategoryId("");
             return;
         }
@@ -87,6 +87,7 @@ function Category() {
                     console.error("データの送信に失敗しました");
                     return;
                 }
+                await fetchCategoryData();
             }catch(error){
                 console.error(error);
             }
@@ -134,6 +135,7 @@ function Category() {
                         <div className={styles.categoryAdd}>
                             <div className={styles.categoryAddInner}>
                                 <select
+                                    className={styles.addSelect}
                                     value={selectedCategoryId}
                                     onChange={(e) =>
                                         setSelectedCategoryId(e.target.value)

@@ -116,8 +116,6 @@ function Home() {
     }
 
     async function timerButton() {
-        alert("clicked");
-        console.log("clicked");
         if(!IsRunning){
 
             setIsRunning(true);
