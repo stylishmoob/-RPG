@@ -1,6 +1,6 @@
 import{ useState,useRef,useEffect } from "react";
 import { Link,useNavigate } from "react-router-dom";
-import Chart from "Chart.js/auto";
+import Chart from "chart.js/auto";
 import type { PeriodType,UnitType,HistoryDataType } from "../types/api";
 import styles from "../styles/history.module.css";
 
