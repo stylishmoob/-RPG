@@ -1,4 +1,6 @@
-from flask import Flask
+from flask import Flask, send_from_directory
+import os
+from pathlib import Path
 
 from backend.routes.auth import auth_bp
 from backend.routes.home_routes import home_bp
@@ -15,10 +17,19 @@ from backend.routes.admin.achievement_routes import admin_achievement_bp
 from backend.routes.admin.rule_routes import admin_rule_bp
 from backend.routes.admin.user_routes import admin_user_bp, reset_user_data_bp
 
-def create_app():
-    app = Flask(__name__)
+PROJECT_DIR = Path(__file__).resolve().parent.parent
+DIST_DIR = PROJECT_DIR / "frontend" / "dist"
 
-    app.config["SECRET_KEY"] = "your-secret-key"
+def create_app():
+    app = Flask(
+        __name__,
+        static_folder=str(DIST_DIR / "assets"),
+        static_url_path="/assets",
+    )
+
+    app.config["SECRET_KEY"] = os.environ.get(
+        "SECRET_KEY",
+        "development-secret-key")
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(home_bp)
@@ -35,6 +46,16 @@ def create_app():
     app.register_blueprint(admin_rule_bp)
     app.register_blueprint(admin_user_bp)
     app.register_blueprint(reset_user_data_bp)
+
+    @app.route("/", defaults={"path": ""})
+    @app.route("/<path:path>")
+    def serve_react(path):
+        requested_file = DIST_DIR / path
+
+        if path and requested_file.is_file():
+            return send_from_directory(DIST_DIR, path)
+
+        return send_from_directory(DIST_DIR, "index.html")
 
     return app
 

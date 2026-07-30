@@ -1,9 +1,10 @@
 import sqlite3
 import os
 from werkzeug.security import generate_password_hash
+from backend.config import DB_NAME
 
 BASE_DIR=os.path.dirname(os.path.abspath(__file__))
-DB_NAME=os.path.join(BASE_DIR,"rpg_table.db")
+
 
 def init_db():
     conn=sqlite3.connect(DB_NAME)
