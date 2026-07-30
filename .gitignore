@@ -8,3 +8,19 @@ dist/
 
 # 環境変数
 .env
+
+# SQLite
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Node
+node_modules/
+
+# React build
+frontend/dist/
+
+# OS
+.DS_Store
+Thumbs.db

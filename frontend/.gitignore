@@ -23,8 +23,4 @@ dist-ssr
 *.sln
 *.sw?
 
-# SQLite
-*.db
-*.db-journal
-*.sqlite
-*.sqlite3
+
