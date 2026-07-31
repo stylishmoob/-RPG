@@ -1,13 +1,11 @@
-import sqlite3
 from flask import Flask
 
-from backend.config import DB_NAME
+from backend.db import get_db_connection
 
 app=Flask(__name__)
 
 def get_admin_users():
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -35,15 +33,15 @@ def get_admin_users():
         conn.close()
 
 def edit_admin_user_active(user_id,is_active):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
             UPDATE users
-            SET is_active=?
-            WHERE id=?
-            """,(is_active,user_id))
+            SET is_active=%s
+            WHERE id=%s
+            """,(int(is_active),user_id))
 
         updated_users=cur.rowcount
         conn.commit()
@@ -61,8 +59,7 @@ def edit_admin_user_active(user_id,is_active):
         conn.close()
 
 def reset_admin_user_data(user_id):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -71,7 +68,7 @@ def reset_admin_user_data(user_id):
         cur.execute("""
             SELECT id
             FROM users
-            WHERE id=?
+            WHERE id=%s
             """,(user_id,))
 
         if cur.fetchone() is None:
@@ -95,46 +92,46 @@ def reset_admin_user_data(user_id):
 
         cur.execute("""
             DELETE FROM time_logs
-            WHERE user_id=?
+            WHERE user_id=%s
             """,(user_id,))
         deleted_time_logs=cur.rowcount
 
         cur.execute("""
             DELETE FROM user_categories
-            WHERE user_id=?
+            WHERE user_id=%s
             """,(user_id,))
         deleted_user_categories=cur.rowcount
 
         cur.execute("""
             DELETE FROM user_statuses
-            WHERE user_id=?
+            WHERE user_id=%s
             """,(user_id,))
         deleted_user_statuses=cur.rowcount
 
         cur.execute("""
             DELETE FROM user_jobs
-            WHERE user_id=?
+            WHERE user_id=%s
             """,(user_id,))
         deleted_user_jobs=cur.rowcount
 
         cur.execute("""
             DELETE FROM user_achievements
-            WHERE user_id=?
+            WHERE user_id=%s
             """,(user_id,))
         deleted_user_achievements=cur.rowcount
 
         cur.execute("""
             UPDATE users
             SET user_level=1,
-                current_job_id=?
-            WHERE id=?
+                current_job_id=%s
+            WHERE id=%s
             """,(default_job_id,user_id))
         updated_users=cur.rowcount
 
         cur.execute("""
             INSERT INTO user_statuses
             (user_id,status_id,status_value)
-            SELECT ?,id,default_value
+            SELECT %s,id,default_value
             FROM master_statuses
             WHERE is_active=1
             """,(user_id,))
@@ -143,7 +140,7 @@ def reset_admin_user_data(user_id):
         cur.execute("""
             INSERT INTO user_jobs
             (user_id,job_id)
-            VALUES(?,?)
+            VALUES(%s,%s)
             """,(user_id,default_job_id))
         inserted_user_jobs=cur.rowcount
 
@@ -171,7 +168,7 @@ def reset_admin_user_data(user_id):
         conn.close()
 
 def delete_admin_user(user_id):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -180,7 +177,7 @@ def delete_admin_user(user_id):
         cur.execute("""
             SELECT id
             FROM users
-            WHERE id=?
+            WHERE id=%s
             """,(user_id,))
 
         if cur.fetchone() is None:
@@ -188,37 +185,37 @@ def delete_admin_user(user_id):
 
         cur.execute("""
             DELETE FROM time_logs
-            WHERE user_id=?
+            WHERE user_id=%s
             """,(user_id,))
         deleted_time_logs=cur.rowcount
 
         cur.execute("""
             DELETE FROM user_categories
-            WHERE user_id=?
+            WHERE user_id=%s
             """,(user_id,))
         deleted_user_categories=cur.rowcount
 
         cur.execute("""
             DELETE FROM user_statuses
-            WHERE user_id=?
+            WHERE user_id=%s
             """,(user_id,))
         deleted_user_statuses=cur.rowcount
 
         cur.execute("""
             DELETE FROM user_jobs
-            WHERE user_id=?
+            WHERE user_id=%s
             """,(user_id,))
         deleted_user_jobs=cur.rowcount
 
         cur.execute("""
             DELETE FROM user_achievements
-            WHERE user_id=?
+            WHERE user_id=%s
             """,(user_id,))
         deleted_user_achievements=cur.rowcount
 
         cur.execute("""
             DELETE FROM users
-            WHERE id=?
+            WHERE id=%s
             """,(user_id,))
         deleted_users=cur.rowcount
 

@@ -1,12 +1,11 @@
-import sqlite3
 from flask import Flask
-from backend.config import DB_NAME
+
+from backend.db import get_db_connection
 
 app=Flask(__name__)
 
 def get_user_jobs(user_id):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -16,7 +15,7 @@ def get_user_jobs(user_id):
             FROM user_jobs
             JOIN master_jobs
             ON user_jobs.job_id=master_jobs.id
-            WHERE user_jobs.user_id=? 
+            WHERE user_jobs.user_id=%s
             AND master_jobs.is_active=1
             """,(user_id,))
         
@@ -31,7 +30,7 @@ def get_user_jobs(user_id):
         conn.close()
 
 def update_current_job(user_id,current_job_id):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -40,8 +39,8 @@ def update_current_job(user_id,current_job_id):
             FROM user_jobs
             JOIN master_jobs
             ON user_jobs.job_id=master_jobs.id
-            WHERE user_jobs.user_id=?
-            AND user_jobs.job_id=?
+            WHERE user_jobs.user_id=%s
+            AND user_jobs.job_id=%s
             AND master_jobs.is_active=1
             """,(user_id,current_job_id))
 
@@ -54,8 +53,8 @@ def update_current_job(user_id,current_job_id):
 
         cur.execute("""
             UPDATE users
-            SET current_job_id=?
-            WHERE id=?
+            SET current_job_id=%s
+            WHERE id=%s
             """,(current_job_id,user_id))
 
         conn.commit()
@@ -73,8 +72,7 @@ def update_current_job(user_id,current_job_id):
         conn.close()
 
 def check_user_job(user_id):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -82,7 +80,7 @@ def check_user_job(user_id):
             SELECT status_id,
                     status_value
             FROM user_statuses
-            WHERE user_id=?
+            WHERE user_id=%s
             """,(user_id,))
         
         user_status={
@@ -124,8 +122,10 @@ def check_user_job(user_id):
 
             if ok:
                 cur.execute("""
-                    INSERT OR IGNORE INTO user_jobs(user_id,job_id)
-                    VALUES (?,?)""",(user_id,job_id))
+                    INSERT INTO user_jobs(user_id,job_id)
+                    VALUES (%s,%s)
+                    ON CONFLICT (user_id,job_id) DO NOTHING
+                    """,(user_id,job_id))
                 
                 if cur.rowcount > 0:
                     new_job_ids.append(job_id)

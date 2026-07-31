@@ -1,12 +1,11 @@
-import sqlite3
 from flask import Flask
-from backend.config import DB_NAME
+
+from backend.db import get_db_connection
 
 app=Flask(__name__)
 
 def get_user_categories(user_id):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     cur.execute("""
@@ -15,7 +14,7 @@ def get_user_categories(user_id):
         FROM user_categories
         JOIN master_categories
         ON user_categories.master_category_id=master_categories.id
-        WHERE user_id=? 
+        WHERE user_id=%s
         AND master_categories.is_active=1
         """,(user_id,)
     )
@@ -26,8 +25,7 @@ def get_user_categories(user_id):
     return user_categories
 
 def get_user_master_categories():
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -45,20 +43,20 @@ def get_user_master_categories():
     
 
 def delete_user_category(user_id,category_id):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
-            DELETE FROM user_categories
-            WHERE id =? 
-            AND user_id=?
+            DELETE FROM time_logs
+            WHERE category_id=%s
+            AND user_id=%s
             """,(category_id,user_id))
 
         cur.execute("""
-            DELETE FROM time_logs
-            WHERE category_id=? 
-            AND user_id=?
+            DELETE FROM user_categories
+            WHERE id =%s
+            AND user_id=%s
             """,(category_id,user_id))
         
         conn.commit()
@@ -71,14 +69,15 @@ def delete_user_category(user_id,category_id):
         conn.close()
 
 def add_user_category(user_id,master_category_id):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
-            INSERT OR IGNORE INTO user_categories
+            INSERT INTO user_categories
             (user_id,master_category_id)
-            VALUES (?,?)
+            VALUES (%s,%s)
+            ON CONFLICT (user_id,master_category_id) DO NOTHING
             """,(user_id,master_category_id)) 
     
         conn.commit()
@@ -91,15 +90,15 @@ def add_user_category(user_id,master_category_id):
         conn.close()
 
 def edit_user_category(user_id,master_category_id,category_id):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
             UPDATE user_categories 
-            SET master_category_id=?
-            WHERE id =? 
-            AND user_id=?
+            SET master_category_id=%s
+            WHERE id =%s
+            AND user_id=%s
             """,(master_category_id,category_id,user_id))
     
         conn.commit()

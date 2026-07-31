@@ -1,5 +1,4 @@
 from flask import Flask
-from backend.config import DB_NAME
 
 app=Flask(__name__)
 
@@ -23,7 +22,7 @@ def insert_default_category_achievements(cur,category_id,category_name):
                 achievement_name,
                 title_name
             )
-            VALUES(?,?,?,?)
+            VALUES(%s,%s,%s,%s)
             """,
             (  
                 category_id,

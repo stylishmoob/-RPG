@@ -1,6 +1,6 @@
-import sqlite3
 from flask import Flask
-from backend.config import DB_NAME
+
+from backend.db import get_db_connection
 
 from backend.queries.time_logs_queries import(
     get_category_summary,
@@ -9,8 +9,7 @@ from backend.queries.time_logs_queries import(
 app=Flask(__name__)
 
 def get_user_achievements(user_id):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -21,7 +20,7 @@ def get_user_achievements(user_id):
             FROM user_achievements
             JOIN master_achievements
             ON user_achievements.achievement_id=master_achievements.id
-            WHERE user_achievements.user_id=? AND master_achievements.is_active=1
+            WHERE user_achievements.user_id=%s AND master_achievements.is_active=1
             ORDER BY master_achievements.id ASC  """,(user_id,))
         
         user_achievements=cur.fetchall()
@@ -37,34 +36,31 @@ def get_user_achievements(user_id):
 def check_category_achievement(user_id):
     new_achievement_count=0
     
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     category_summary=get_category_summary("all",user_id)
     category_hours={}
-    for category_id,category_name,total_seconds in category_summary:
-        category_hours[category_id]=total_seconds/3600
+    for row in category_summary:
+        category_hours[row["category_id"]]=(row["category_total_seconds"] or 0)/3600
 
-        cur.execute("""
-            SELECT id,required_category_id,required_hours
-            FROM master_achievements
-            WHERE is_active=1""")
-        achievements=cur.fetchall()
+    cur.execute("""
+        SELECT id,required_category_id,required_hours
+        FROM master_achievements
+        WHERE is_active=1""")
+    achievements=cur.fetchall()
 
-    for achievement_id,required_category_id,required_hours in achievements:
-        total_hours=category_hours.get(required_category_id,0)
+    for achievement in achievements:
+        total_hours=category_hours.get(achievement["required_category_id"],0)
 
-        if total_hours >=required_hours:
-            before=conn.total_changes
-
+        if total_hours >= achievement["required_hours"]:
             cur.execute("""
-                INSERT OR IGNORE INTO user_achievements(user_id,achievement_id)
-                VALUES(?,?)
-                """,(user_id,achievement_id))
+                INSERT INTO user_achievements(user_id,achievement_id)
+                VALUES(%s,%s)
+                ON CONFLICT (user_id,achievement_id) DO NOTHING
+                """,(user_id,achievement["id"]))
             
-            after=conn.total_changes
-
-            if after>before:
+            if cur.rowcount > 0:
                 new_achievement_count +=1
             
     conn.commit()

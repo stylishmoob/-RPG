@@ -1,6 +1,5 @@
-import sqlite3
-
 from flask import Blueprint, jsonify, session,request
+from psycopg import errors
 
 from werkzeug.security import check_password_hash,generate_password_hash
 
@@ -44,7 +43,7 @@ def api_register():
     try:
         create_user(user_name,password_hash)
 
-    except sqlite3.IntegrityError:
+    except errors.UniqueViolation:
         return jsonify({
             "success": False,
             "message": "そのユーザー名は既に使われています"

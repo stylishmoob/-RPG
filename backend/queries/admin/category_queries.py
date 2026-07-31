@@ -1,8 +1,8 @@
-import sqlite3
 from flask import Flask
 import csv
 import io
-from backend.config import DB_NAME
+
+from backend.db import get_db_connection
 
 from backend.queries.admin.common_queries import(
     insert_default_category_achievements
@@ -11,8 +11,7 @@ from backend.queries.admin.common_queries import(
 app=Flask(__name__)
 
 def get_master_categories():
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -31,13 +30,14 @@ def get_master_categories():
         
 
 def add_master_category(category_name):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
-            INSERT OR IGNORE INTO master_categories(category_name)
-            VALUES(?)
+            INSERT INTO master_categories(category_name)
+            VALUES(%s)
+            ON CONFLICT (category_name) DO NOTHING
             """,(category_name,))
         
         conn.commit()
@@ -50,16 +50,16 @@ def add_master_category(category_name):
         conn.close()
 
 def edit_master_category(category_id,category_name,is_active):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
             UPDATE master_categories 
-            SET category_name=?, 
-                is_active=?
-            WHERE id=?
-            """,(category_name,is_active,category_id))
+            SET category_name=%s,
+                is_active=%s
+            WHERE id=%s
+            """,(category_name,int(is_active),category_id))
         
         conn.commit()
 
@@ -71,14 +71,14 @@ def edit_master_category(category_id,category_name,is_active):
         conn.close()
 
 def delete_master_category(category_id):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
             SELECT id
             FROM master_categories
-            WHERE id=?
+            WHERE id=%s
             """,(category_id,))
 
         category = cur.fetchone()
@@ -93,19 +93,18 @@ def delete_master_category(category_id):
         cur.execute("""
             SELECT id
             FROM user_categories
-            WHERE master_category_id=?
+            WHERE master_category_id=%s
             """,(category_id,))
 
-        user_category_ids = [row[0] for row in cur.fetchall()]
+        user_category_ids = [row["id"] for row in cur.fetchall()]
 
         deleted_time_logs = 0
 
         if user_category_ids:
-            placeholders = ",".join("?" for _ in user_category_ids)
-            cur.execute(f"""
+            cur.execute("""
                 DELETE FROM time_logs
-                WHERE category_id IN ({placeholders})
-                """,user_category_ids)
+                WHERE category_id = ANY(%s)
+                """,(user_category_ids,))
             deleted_time_logs = cur.rowcount
 
         cur.execute("""
@@ -113,32 +112,32 @@ def delete_master_category(category_id):
             WHERE achievement_id IN (
                 SELECT id
                 FROM master_achievements
-                WHERE required_category_id=?
+                WHERE required_category_id=%s
             )
             """,(category_id,))
         deleted_user_achievements = cur.rowcount
 
         cur.execute("""
             DELETE FROM master_achievements
-            WHERE required_category_id=?
+            WHERE required_category_id=%s
             """,(category_id,))
         deleted_achievements = cur.rowcount
 
         cur.execute("""
             DELETE FROM status_up_rules
-            WHERE category_id=?
+            WHERE category_id=%s
             """,(category_id,))
         deleted_status_rules = cur.rowcount
 
         cur.execute("""
             DELETE FROM user_categories
-            WHERE master_category_id=?
+            WHERE master_category_id=%s
             """,(category_id,))
         deleted_user_categories = cur.rowcount
 
         cur.execute("""
             DELETE FROM master_categories
-            WHERE id=?
+            WHERE id=%s
             """,(category_id,))
         deleted_categories = cur.rowcount
 
@@ -163,11 +162,24 @@ def delete_master_category(category_id):
 
 def import_master_category(cur,category_name):
     cur.execute("""
-        INSERT OR IGNORE INTO master_categories(category_name)
-        VALUES(?)
+        INSERT INTO master_categories(category_name)
+        VALUES(%s)
+        ON CONFLICT (category_name) DO NOTHING
+        RETURNING id
         """,(category_name,))
-    
-    return cur.lastrowid
+
+    row=cur.fetchone()
+
+    if row is not None:
+        return row["id"]
+
+    cur.execute("""
+        SELECT id
+        FROM master_categories
+        WHERE category_name=%s
+        """,(category_name,))
+
+    return cur.fetchone()["id"]
 
 def import_category_csv(csv_file):
     if csv_file is None:
@@ -247,7 +259,7 @@ def import_category_csv(csv_file):
         })
 
         
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -284,22 +296,21 @@ def import_category_csv(csv_file):
     })
 
 def get_category_id(category_name):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
             SELECT id
             FROM master_categories
-            WHERE name=?""",(category_name,))
+            WHERE category_name=%s""",(category_name,))
         
-        category_id=cur.fetchone()
+        category=cur.fetchone()
 
-        if category_id is None:
+        if category is None:
             return None
         
-        return category_id
+        return category["id"]
 
     except Exception:
         conn.rollback()

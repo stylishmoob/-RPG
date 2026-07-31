@@ -1,8 +1,8 @@
-import sqlite3
 from flask import Flask
 import csv
 import io
-from backend.config import DB_NAME
+
+from backend.db import get_db_connection
 
 from backend.queries.admin.category_queries import (
     get_category_id,
@@ -11,8 +11,7 @@ from backend.queries.admin.category_queries import (
 app=Flask(__name__)
 
 def get_master_achievements():
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -40,14 +39,14 @@ def get_master_achievements():
         conn.close()
     
 def add_master_achievement(required_category_id,required_hours,achievement_name,title_name):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
             INSERT INTO master_achievements(
             required_category_id,required_hours,achievement_name,title_name)
-            VALUES(?,?,?,?)
+            VALUES(%s,%s,%s,%s)
         """,(required_category_id,required_hours,achievement_name,title_name))
 
         conn.commit()
@@ -60,20 +59,20 @@ def add_master_achievement(required_category_id,required_hours,achievement_name,
 
 def edit_master_achievement(achievement_id,required_category_id,
                             required_hours,achievement_name,title_name,is_active):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
             UPDATE master_achievements
-            SET required_category_id=?,
-                required_hours=?,
-                achievement_name=?,
-                title_name=?,
-                is_active=?
-            WHERE id=?
+            SET required_category_id=%s,
+                required_hours=%s,
+                achievement_name=%s,
+                title_name=%s,
+                is_active=%s
+            WHERE id=%s
             """,(required_category_id,required_hours,achievement_name,
-                title_name,is_active,achievement_id))
+                title_name,int(is_active),achievement_id))
         
         conn.commit()
 
@@ -85,14 +84,14 @@ def edit_master_achievement(achievement_id,required_category_id,
         conn.close()
 
 def delete_master_achievement(achievement_id):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
             SELECT id
             FROM master_achievements
-            WHERE id=?
+            WHERE id=%s
             """,(achievement_id,))
 
         achievement = cur.fetchone()
@@ -106,13 +105,13 @@ def delete_master_achievement(achievement_id):
 
         cur.execute("""
             DELETE FROM user_achievements
-            WHERE achievement_id=?
+            WHERE achievement_id=%s
             """,(achievement_id,))
         deleted_user_achievements = cur.rowcount
 
         cur.execute("""
             DELETE FROM master_achievements
-            WHERE id=?
+            WHERE id=%s
             """,(achievement_id,))
         deleted_achievements = cur.rowcount
 
@@ -248,17 +247,17 @@ def import_achievement_csv(csv_file):
         })
 
         
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         for row in valid_rows:
             import_master_achievement(
                 cur,
-                category_id,
-                required_hours,
-                achievement_name,
-                title_name, 
+                row["category_id"],
+                row["required_hours"],
+                row["achievement_name"],
+                row["title_name"],
             )
 
         conn.commit()
@@ -283,7 +282,7 @@ def import_master_achievement(cur,category_id,required_hours,achievement_name,ti
     cur.execute("""
         INSERT INTO master_achievements
         (required_category_id,required_hours,achievement_name,title_name)
-        VALUES(?,?,?,?)
+        VALUES(%s,%s,%s,%s)
             """,(category_id,required_hours,achievement_name,title_name))
     
 

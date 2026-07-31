@@ -1,12 +1,11 @@
-import sqlite3
 from flask import Flask
-from backend.config import DB_NAME
+
+from backend.db import get_db_connection
 
 app=Flask(__name__)
 
 def get_category_summary(period,user_id):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -20,10 +19,11 @@ def get_category_summary(period,user_id):
                     ON time_logs.category_id=user_categories.id
             JOIN master_categories
                 ON user_categories.master_category_id=master_categories.id
-            WHERE time_logs.user_id=?
+            WHERE time_logs.user_id=%s
             {and_sql} 
             AND master_categories.is_active=1
-            GROUP BY master_categories.id
+            GROUP BY master_categories.id,
+                    master_categories.category_name
             ORDER BY category_total_seconds DESC
                     """,(user_id,))
     
@@ -39,8 +39,7 @@ def get_category_summary(period,user_id):
     
 
 def get_daily_summary(period,user_id):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -49,17 +48,18 @@ def get_daily_summary(period,user_id):
         cur.execute(f"""
             SELECT time_logs.category_id AS category_id,
                     master_categories.category_name AS category_name,
-                    DATE(time_logs.start_time) AS log_date,
+                    time_logs.start_time::timestamp::date AS log_date,
                     SUM(time_logs.duration_seconds) AS daily_total_seconds
             FROM time_logs
             JOIN user_categories
                 ON time_logs.category_id=user_categories.id
             JOIN master_categories
                 ON user_categories.master_category_id=master_categories.id
-            WHERE time_logs.user_id=?
+            WHERE time_logs.user_id=%s
             {and_sql}
             AND is_active=1
             GROUP BY time_logs.category_id,
+                    master_categories.category_name,
                     log_date
             ORDER BY log_date,
                     daily_total_seconds DESC
@@ -76,8 +76,7 @@ def get_daily_summary(period,user_id):
         conn.close()
 
 def get_today_logs(user_id):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -85,16 +84,16 @@ def get_today_logs(user_id):
             SELECT 
                 time_logs.category_id AS category_id,
                 master_categories.category_name AS category_name,
-                strftime('%H:%M:%S',time_logs.start_time,'localtime') AS start_time,
-                strftime('%H:%M:%S',time_logs.end_time,'localtime') AS end_time,
+                to_char(time_logs.start_time::timestamp,'HH24:MI:SS') AS start_time,
+                to_char(time_logs.end_time::timestamp,'HH24:MI:SS') AS end_time,
                 time_logs.duration_seconds AS duration_seconds
             FROM time_logs
             JOIN user_categories 
                 ON time_logs.category_id=user_categories.id
             JOIN master_categories
                 ON user_categories.master_category_id=master_categories.id
-            WHERE DATE(time_logs.start_time,'localtime')=DATE('now','localtime')
-                AND time_logs.user_id=?
+            WHERE time_logs.start_time::timestamp::date=CURRENT_DATE
+                AND time_logs.user_id=%s
                 AND master_categories.is_active=1
             ORDER BY time_logs.start_time
             """,(user_id,))
@@ -110,7 +109,7 @@ def get_today_logs(user_id):
         conn.close()
 
 def get_time_logs(user_id):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -124,7 +123,7 @@ def get_time_logs(user_id):
             ON time_logs.category_id=user_categories.id
             JOIN master_categories
             ON user_categories.master_category_id=master_categories.id
-            WHERE time_logs.user_id=? AND master_categories.is_active=1
+            WHERE time_logs.user_id=%s AND master_categories.is_active=1
             """,(user_id,))
         
         logs=cur.fetchall()
@@ -138,13 +137,13 @@ def get_time_logs(user_id):
         conn.close()
 
 def save_time_logs(user_id,selected_category_id,start_time,end_time,duration_seconds):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
                     INSERT INTO time_logs(user_id,category_id,start_time,end_time,duration_seconds)
-                    VALUES(?,?,?,?,?)
+                    VALUES(%s,%s,%s,%s,%s)
                     """,(user_id,selected_category_id,start_time,end_time,duration_seconds))
 
         conn.commit()
@@ -158,14 +157,14 @@ def save_time_logs(user_id,selected_category_id,start_time,end_time,duration_sec
 
 def check_period(period):
     if period =="today":
-        return "AND DATE(start_time,'localtime')=DATE('now','localtime')"
+        return "AND time_logs.start_time::timestamp::date=CURRENT_DATE"
     elif period == "7days":
-        return "AND DATE(start_time,'localtime') >= DATE('now','localtime','-6 days')"
+        return "AND time_logs.start_time::timestamp::date >= CURRENT_DATE - INTERVAL '6 days'"
     elif period == "week":
-        return "AND DATE(start_time,'localtime') >= DATE('now','localtime','-'||strftime('%w','now','localtime') || ' days')"
+        return "AND time_logs.start_time::timestamp::date >= (CURRENT_DATE - EXTRACT(DOW FROM CURRENT_DATE)::int * INTERVAL '1 day')::date"
     elif period == "month":
-        return "AND strftime('%Y-%m',start_time,'localtime') =strftime('%Y-%m','now','localtime')"
+        return "AND to_char(time_logs.start_time::timestamp,'YYYY-MM') = to_char(CURRENT_DATE,'YYYY-MM')"
     elif period=="year":
-        return "AND strftime('%Y',start_time,'localtime')=strftime('%Y','now','localtime')"
+        return "AND to_char(time_logs.start_time::timestamp,'YYYY') = to_char(CURRENT_DATE,'YYYY')"
     else:
         return ""

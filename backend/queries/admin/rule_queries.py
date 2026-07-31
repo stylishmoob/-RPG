@@ -1,8 +1,8 @@
-import sqlite3
 from flask import Flask
 import csv
 import io
-from backend.config import DB_NAME
+
+from backend.db import get_db_connection
 
 from backend.queries.admin.category_queries import (
     get_category_id,
@@ -14,8 +14,7 @@ from backend.queries.admin.status_queries import (
 app=Flask(__name__)
 
 def get_master_status_rules():
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -48,13 +47,13 @@ def get_master_status_rules():
 
         
 def add_status_rules(category_id,status_id,gain_per_hours):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
             INSERT INTO status_up_rules(category_id,status_id,gain_per_hours)
-            VALUES(?,?,?)
+            VALUES(%s,%s,%s)
             """,(category_id,status_id,gain_per_hours))
         
         conn.commit()
@@ -67,13 +66,13 @@ def add_status_rules(category_id,status_id,gain_per_hours):
         conn.close()
 
 def delete_status_rules(category_id,status_id):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
             DELETE FROM status_up_rules
-            WHERE category_id=? AND status_id=?""",(category_id,status_id))
+            WHERE category_id=%s AND status_id=%s""",(category_id,status_id))
         
         conn.commit()
 
@@ -85,13 +84,13 @@ def delete_status_rules(category_id,status_id):
         conn.close()
 
 def delete_status_rule(status_rules_id):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
             DELETE FROM status_up_rules
-            WHERE id=?""",(status_rules_id,))
+            WHERE id=%s""",(status_rules_id,))
 
         conn.commit()
 
@@ -103,19 +102,18 @@ def delete_status_rule(status_rules_id):
         conn.close()
 
 def edit_status_rules(status_rules_id,category_id,status_id,gain_per_hours,status_rules_is_active):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
             UPDATE status_up_rules
-            SET category_id = ?,
-                status_id =?,
-                gain_per_hours =?,
-                is_active =?
-            WHERE id=?
-            VALUES(?,?,?,?,?)
-            """,(category_id,status_id,gain_per_hours,status_rules_is_active,status_rules_id))
+            SET category_id = %s,
+                status_id =%s,
+                gain_per_hours =%s,
+                is_active =%s
+            WHERE id=%s
+            """,(category_id,status_id,gain_per_hours,int(status_rules_is_active),status_rules_id))
 
         conn.commit()
 
@@ -241,16 +239,16 @@ def import_status_rules_csv(csv_file):
         })
 
         
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         for row in valid_rows:
             import_status_rules(
                 cur,
-                category_id,
-                status_id,
-                gain_per_hours,
+                row["category_id"],
+                row["status_id"],
+                row["gain_per_hours"],
             )
 
         conn.commit()
@@ -275,5 +273,5 @@ def import_status_rules(cur,category_id,status_id,gain_per_hours):
     cur.execute("""
         INSERT INTO status_up_rules
         (category_id,status_id,gain_per_hours)
-        VALUES(?,?,?)
+        VALUES(%s,%s,%s)
             """,(category_id,status_id,gain_per_hours))

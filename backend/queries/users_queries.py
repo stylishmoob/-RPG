@@ -1,12 +1,11 @@
-import sqlite3
 from flask import Flask
-from backend.config import DB_NAME
+
+from backend.db import get_db_connection
 
 app=Flask(__name__)
 
 def get_user_by_id(user_id):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -20,7 +19,7 @@ def get_user_by_id(user_id):
             FROM users
             JOIN master_jobs
             ON users.current_job_id = master_jobs.id
-            WHERE users.id=?""",(user_id,))
+            WHERE users.id=%s""",(user_id,))
         
         user=cur.fetchone()
         return dict(user) if user else None
@@ -33,8 +32,7 @@ def get_user_by_id(user_id):
         conn.close()
 
 def get_user_by_name(user_name):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -48,7 +46,7 @@ def get_user_by_name(user_name):
             FROM users
             JOIN master_jobs
             ON master_jobs.id=users.current_job_id
-            WHERE users.user_name=?""",(user_name,))
+            WHERE users.user_name=%s""",(user_name,))
         
         user=cur.fetchone()
         return dict(user) if user else None
@@ -64,8 +62,7 @@ def get_user_by_name(user_name):
         
 
 def create_user(user_name,password_hash):
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -75,13 +72,20 @@ def create_user(user_name,password_hash):
             WHERE is_default=1
             AND is_active=1""")
 
-        default_job_id=cur.fetchone()[0]
+        default_job=cur.fetchone()
+
+        if default_job is None:
+            raise ValueError("デフォルトジョブが存在しません")
+
+        default_job_id=default_job["id"]
 
         cur.execute("""
             INSERT INTO users(user_name,password_hash,current_job_id)
-            VALUES(?,?,?)""",(user_name,password_hash,default_job_id))
+            VALUES(%s,%s,%s)
+            RETURNING id
+            """,(user_name,password_hash,default_job_id))
         
-        user_id=cur.lastrowid
+        user_id=cur.fetchone()["id"]
 
         cur.execute("""
             SELECT id,
@@ -96,7 +100,7 @@ def create_user(user_name,password_hash):
             cur.execute("""
                 INSERT INTO user_statuses
                 (user_id,status_id,status_value)
-                VALUES(?,?,?)""",(user_id,
+                VALUES(%s,%s,%s)""",(user_id,
                                 status["id"],
                                 status["default_value"])
             )
@@ -107,11 +111,11 @@ def create_user(user_name,password_hash):
             WHERE is_default=1
             AND is_active=1""")
 
-        job_id=cur.fetchone()[0]
+        job_id=cur.fetchone()["id"]
                 
         cur.execute("""
             INSERT INTO user_jobs(user_id,job_id)
-            VALUES(?,?)
+            VALUES(%s,%s)
             """,(user_id,job_id))
         
         conn.commit()

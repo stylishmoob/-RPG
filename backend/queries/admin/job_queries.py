@@ -1,8 +1,8 @@
-import sqlite3
 from flask import Flask
 import csv
 import io
-from backend.config import DB_NAME
+
+from backend.db import get_db_connection
 
 from backend.queries.admin.status_queries import(
     get_status_id_by_name,
@@ -11,8 +11,7 @@ from backend.queries.admin.status_queries import(
 app=Flask(__name__)
 
 def get_master_jobs():
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -37,8 +36,7 @@ def get_master_jobs():
         
 
 def get_job_requirements():
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
@@ -67,7 +65,7 @@ def get_job_requirements():
     
 
 def add_admin_job(job_name,requirements):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
     try:
         job_id=add_master_job(cur,job_name)
@@ -84,9 +82,11 @@ def add_master_job(cur,job_name):
     cur.execute("""
         INSERT INTO master_jobs
         (job_name)
-        VALUES(?)""",(job_name,))
+        VALUES(%s)
+        RETURNING id
+        """,(job_name,))
     
-    job_id=cur.lastrowid
+    job_id=cur.fetchone()["id"]
 
     return job_id
 
@@ -95,11 +95,11 @@ def add_master_jobrequirements(cur,job_id,requirements):
         cur.execute("""
             INSERT INTO job_requirements
             (job_id,required_status_id,required_status_value)
-            VALUES(?,?,?)
+            VALUES(%s,%s,%s)
             """,(job_id,req["statusId"],req["requiredValue"],))
 
 def edit_admin_job(job_id,job_name,is_active,is_default,requirements):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
     try:
         edit_master_job(cur,job_id,job_name,is_active,is_default)
@@ -115,45 +115,45 @@ def edit_admin_job(job_id,job_name,is_active,is_default,requirements):
 def edit_master_job(cur,job_id,job_name,is_active,is_default):
     cur.execute("""
         UPDATE master_jobs
-        SET job_name=?,
-            is_active=?,
-            is_default=?
-        WHERE job_id=?""",(job_name,is_active,is_default,job_id))
+        SET job_name=%s,
+            is_active=%s,
+            is_default=%s
+        WHERE id=%s""",(job_name,int(is_active),int(is_default),job_id))
     
 def edit_job_requirement(cur,job_id,requirements):
     for req in requirements:
         cur.execute("""
         UPDATE job_requirements
-        SET required_status_id=?,required_status_value=?,is_active=?
-        WHERE id=?
-        AND job_id=?""",(
+        SET required_status_id=%s,required_status_value=%s,is_active=%s
+        WHERE id=%s
+        AND job_id=%s""",(
             req["statusId"],
             req["requiredValue"],
-            req["isActive"],
+            int(req["isActive"]),
             req["id"],
             job_id,
         ))
 
 
 def delete_admin_job(job_id):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
             SELECT id
             FROM master_jobs
-            WHERE id<>?
+            WHERE id<>%s
             AND is_active=1
             ORDER BY is_default DESC,id
             LIMIT 1""",(job_id,))
         fallback_job=cur.fetchone()
 
         cur.execute("""
-            SELECT COUNT(*)
+            SELECT COUNT(*) AS user_count
             FROM users
-            WHERE current_job_id=?""",(job_id,))
-        current_job_user_count=cur.fetchone()[0]
+            WHERE current_job_id=%s""",(job_id,))
+        current_job_user_count=cur.fetchone()["user_count"]
 
         if current_job_user_count > 0 and fallback_job is None:
             raise ValueError("削除後に設定できる職業がありません")
@@ -161,25 +161,25 @@ def delete_admin_job(job_id):
         if fallback_job is not None:
             cur.execute("""
                 UPDATE users
-                SET current_job_id=?
-                WHERE current_job_id=?""",(fallback_job[0],job_id))
+                SET current_job_id=%s
+                WHERE current_job_id=%s""",(fallback_job["id"],job_id))
             updated_current_jobs=cur.rowcount
         else:
             updated_current_jobs=0
 
         cur.execute("""
             DELETE FROM job_requirements
-            WHERE job_id=?""",(job_id,))
+            WHERE job_id=%s""",(job_id,))
         deleted_job_requirements=cur.rowcount
 
         cur.execute("""
             DELETE FROM user_jobs
-            WHERE job_id=?""",(job_id,))
+            WHERE job_id=%s""",(job_id,))
         deleted_user_jobs=cur.rowcount
 
         cur.execute("""
             DELETE FROM master_jobs
-            WHERE id=?""",(job_id,))
+            WHERE id=%s""",(job_id,))
         deleted_jobs=cur.rowcount
 
         conn.commit()
@@ -201,13 +201,13 @@ def delete_admin_job(job_id):
 
 
 def delete_job_requirement(requirement_id):
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     try:
         cur.execute("""
             DELETE FROM job_requirements
-            WHERE id=?""",(requirement_id,))
+            WHERE id=%s""",(requirement_id,))
         deleted_job_requirements=cur.rowcount
 
         conn.commit()
@@ -330,7 +330,7 @@ def import_jobs_csv(csv_file):
             "required_status_value":required_status_value,
         })
 
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
     
     try:
@@ -368,9 +368,23 @@ def import_master_job(cur,job_name):
     cur.execute("""
         INSERT INTO master_jobs
         (job_name)
-        VALUES=(?)""",(job_name,))
+        VALUES(%s)
+        ON CONFLICT (job_name) DO NOTHING
+        RETURNING id
+        """,(job_name,))
 
-    return cur.lastrowid
+    row=cur.fetchone()
+
+    if row is not None:
+        return row["id"]
+
+    cur.execute("""
+        SELECT id
+        FROM master_jobs
+        WHERE job_name=%s
+        """,(job_name,))
+
+    return cur.fetchone()["id"]
 
 def import_job_requirement(cur,job_id,status_id,status_value):
     cur.execute("""
@@ -378,4 +392,5 @@ def import_job_requirement(cur,job_id,status_id,status_value):
         (job_id,
         required_status_id,
         required_status_value)
-        VALUES=(?,?,?)""",(job_id,status_id,status_value))
+        VALUES(%s,%s,%s)
+        """,(job_id,status_id,status_value))

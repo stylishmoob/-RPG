@@ -1,24 +1,21 @@
-import sqlite3
-import os
 from werkzeug.security import generate_password_hash
-from backend.config import DB_NAME
 
-BASE_DIR=os.path.dirname(os.path.abspath(__file__))
+from backend.db import get_db_connection
 
 
 def init_db():
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     cur.execute("""
             CREATE TABLE IF NOT EXISTS master_categories(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
             category_name TEXT NOT NULL UNIQUE,
             is_active INTEGER NOT NULL DEFAULT 1 )""")
 
     cur.execute("""
             CREATE TABLE IF NOT EXISTS master_statuses(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
             status_name TEXT NOT NULL UNIQUE,
             status_type TEXT NOT NULL,
             default_value REAL NOT NULL DEFAULT 10,
@@ -27,7 +24,7 @@ def init_db():
 
     cur.execute("""
             CREATE TABLE IF NOT EXISTS master_achievements(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
             required_category_id INTEGER NOT NULL,
             required_hours INTEGER NOT NULL,
             achievement_name TEXT NOT NULL,
@@ -39,7 +36,7 @@ def init_db():
 
     cur.execute("""
             CREATE TABLE IF NOT EXISTS master_jobs(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
             job_name TEXT NOT NULL UNIQUE,
             is_active INTEGER NOT NULL DEFAULT 1,
             is_default INTEGER DEFAULT 0
@@ -47,7 +44,7 @@ def init_db():
 
     cur.execute("""
             CREATE TABLE IF NOT EXISTS status_up_rules(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
             category_id INTEGER NOT NULL,
             status_id INTEGER NOT NULL,
             gain_per_hours REAL,
@@ -61,7 +58,7 @@ def init_db():
 
     cur.execute("""
             CREATE TABLE IF NOT EXISTS job_requirements(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
             job_id INTEGER NOT NULL,
             required_status_id INTEGER NOT NULL,
             required_status_value INTEGER NOT NULL,
@@ -75,7 +72,7 @@ def init_db():
 
     cur.execute("""
             CREATE TABLE IF NOT EXISTS users(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
             user_name TEXT UNIQUE,
             password_hash TEXT NOT NULL,
             current_job_id INTEGER NOT NULL,
@@ -88,7 +85,7 @@ def init_db():
 
     cur.execute("""
             CREATE TABLE IF NOT EXISTS user_categories(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
             user_id INTEGER NOT NULL,
             master_category_id INTEGER NOT NULL,
             UNIQUE(user_id,master_category_id),
@@ -98,7 +95,7 @@ def init_db():
 
     cur.execute("""
             CREATE TABLE IF NOT EXISTS user_statuses(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
             user_id INTEGER NOT NULL,
             status_id INTEGER NOT NULL,
             status_value REAL NOT NULL,
@@ -111,7 +108,7 @@ def init_db():
 
     cur.execute("""
             CREATE TABLE IF NOT EXISTS user_achievements(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
             user_id INTEGER NOT NULL,
             achievement_id INTEGER NOT NULL,
             UNIQUE(user_id,achievement_id),
@@ -122,7 +119,7 @@ def init_db():
 
     cur.execute("""
             CREATE TABLE IF NOT EXISTS user_jobs(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
             user_id INTEGER NOT NULL,
             job_id INTEGER NOT NULL,
             UNIQUE(user_id,job_id),
@@ -133,7 +130,7 @@ def init_db():
     
     cur.execute("""
         CREATE TABLE IF NOT EXISTS time_logs(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         user_id INTEGER NOT NULL,
         category_id INTEGER NOT NULL,
         start_time TEXT,
@@ -141,15 +138,14 @@ def init_db():
         duration_seconds INTEGER,
           
         FOREIGN KEY (user_id) REFERENCES users(id),
-        FOREIGN KEY (category_id) REFERENCES master_categories(id)  )""")
+        FOREIGN KEY (category_id) REFERENCES user_categories(id)  )""")
 
     conn.commit()
     conn.close()
 
 
 def add_master_user_id():
-    conn=sqlite3.connect(DB_NAME)
-    conn.row_factory=sqlite3.Row
+    conn=get_db_connection()
     cur=conn.cursor()
 
     user_name="administrator"
@@ -167,26 +163,32 @@ def add_master_user_id():
         if job_row is None:
             raise ValueError("デフォルトジョブが存在しません")
 
-        default_job_id = job_row[0]
+        default_job_id = job_row["id"]
 
         cur.execute("""
-            INSERT OR IGNORE INTO users 
+            INSERT INTO users
             (user_name,
             password_hash,
             current_job_id,
             user_level,
             is_admin
             )
-            VALUES(?,?,?,100,1)
+            VALUES(%s,%s,%s,100,1)
+            ON CONFLICT (user_name) DO NOTHING
             """,(user_name,password_hash,default_job_id))
 
         cur.execute("""
                 SELECT id
                 FROM users
-                WHERE user_name=?
+                WHERE user_name=%s
                 """,(user_name,))
         
-        user_id = cur.lastrowid
+        user_row=cur.fetchone()
+
+        if user_row is None:
+            raise ValueError("管理ユーザーの作成に失敗しました")
+
+        user_id = user_row["id"]
     
         cur.execute("""
             SELECT id,default_value
@@ -198,20 +200,23 @@ def add_master_user_id():
 
         for status in statuses:
             cur.execute("""
-                INSERT OR IGNORE INTO user_statuses
+                INSERT INTO user_statuses
                 (user_id,
                 status_id,
                 status_value
                 )
-                VALUES(?,?,?)""",(user_id,
+                VALUES(%s,%s,%s)
+                ON CONFLICT (user_id,status_id) DO NOTHING
+                """,(user_id,
                                     status["id"],
                                     status["default_value"],))
-            
+
         cur.execute("""
             INSERT INTO user_jobs(
                 user_id,
                 job_id)
-            VALUES(?,?)
+            VALUES(%s,%s)
+            ON CONFLICT (user_id,job_id) DO NOTHING
             """,(user_id,default_job_id,))
               
         conn.commit()
@@ -224,7 +229,7 @@ def add_master_user_id():
         conn.close()
 
 def init_statuses():
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     init_statuses=[("HP","front",100),("MP","front",30),("STR","front",10),("INT","front",10),
@@ -233,22 +238,23 @@ def init_statuses():
     
     for status_name,status_type,default_value in init_statuses:
         cur.execute("""
-            INSERT OR IGNORE INTO master_statuses
+            INSERT INTO master_statuses
             (status_name,status_type,default_value)
-            VALUES(?,?,?)
+            VALUES(%s,%s,%s)
+            ON CONFLICT (status_name) DO NOTHING
         """,(status_name,status_type,default_value))
 
     conn.commit()
     conn.close()
 
 def init_jobs():
-    conn=sqlite3.connect(DB_NAME)
+    conn=get_db_connection()
     cur=conn.cursor()
 
     cur.execute("""
         SELECT id
         FROM master_jobs
-        WHERE job_name=?""",("放浪者",))
+        WHERE job_name=%s""",("放浪者",))
 
     row=cur.fetchone()
 
@@ -259,7 +265,7 @@ def init_jobs():
             job_name,
             is_default
             )
-            VALUES(?,?)
+            VALUES(%s,%s)
             """,("放浪者",1))
     
     conn.commit()
