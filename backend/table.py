@@ -265,7 +265,11 @@ def init_jobs():
     conn.commit()
     conn.close()
 
-init_db()
-init_statuses()
-init_jobs()
-add_master_user_id()
+def initialize_database():
+    init_db()
+    init_statuses()
+    init_jobs()
+    add_master_user_id()
+
+if __name__ == "__main__":
+    initialize_database()

@@ -2,6 +2,8 @@ from flask import Flask, send_from_directory
 import os
 from pathlib import Path
 
+from backend.table import initialize_database
+
 from backend.routes.auth import auth_bp
 from backend.routes.home_routes import home_bp
 from backend.routes.category_routes import category_bp
@@ -21,6 +23,8 @@ PROJECT_DIR = Path(__file__).resolve().parent.parent
 DIST_DIR = PROJECT_DIR / "frontend" / "dist"
 
 def create_app():
+    initialize_database()
+
     app = Flask(
         __name__,
         static_folder=str(DIST_DIR / "assets"),
