@@ -45,22 +45,6 @@ function Home() {
     const [isLogoutModalOpen,setIsLogoutModalOpen] = useState(false);
 
     useEffect(() => {
-        async function fetchHomeData(){
-            try{
-                const response = await fetch("/api/home");
-                if(response.status === 401){
-                    navigate("/login");
-                    return;
-                }
-                if(!response.ok){
-                    throw new Error("データの取得に失敗しました");
-                }
-                const data: HomeDataType = await response.json();
-                setHomeData(data);
-            } catch (error){
-                console.error(error);
-            }
-        }
         fetchHomeData();
     },[navigate]);
 
@@ -88,6 +72,23 @@ function Home() {
      if (!HP || !MP){
         return <div>ステータスデータが不足しています</div>;
     }   
+
+    async function fetchHomeData(){
+            try{
+                const response = await fetch("/api/home");
+                if(response.status === 401){
+                    navigate("/login");
+                    return;
+                }
+                if(!response.ok){
+                    throw new Error("データの取得に失敗しました");
+                }
+                const data: HomeDataType = await response.json();
+                setHomeData(data);
+            } catch (error){
+                console.error(error);
+            }
+        }
 
     async function logout() {
         try{
@@ -149,6 +150,8 @@ function Home() {
                 start_time: StartTime,
                 end_time: endTime,
                 duration_seconds: durationseconds,});
+
+                await fetchHomeData();
 
                 console.log(result);
                 }catch(error){
@@ -235,14 +238,14 @@ function Home() {
                                         <div className={`${styles.hpBar}`}>
                                             <div className={`${styles.hpFill}`}></div>
                                         </div>
-                                        <span id="hp-value" className={`${styles.hpValue}`}>{HP.value}/{HP.value}</span>
+                                        <span id="hp-value" className={`${styles.hpValue}`}>{Math.floor(HP.value)}/{Math.floor(HP.value)}</span>
                                     </div>
                                     <div id="status-mp" className={`${styles.statusMp}`}>
                                         <span className={`${styles.statusName}`}>{MP.name}</span>
                                         <div className={`${styles.mpBar}`}>
                                             <div className={`${styles.mpFill}`}></div>
                                         </div>
-                                        <span id="mp-value" className={`${styles.mpValue}`}>{MP.value}/{MP.value}</span>
+                                        <span id="mp-value" className={`${styles.mpValue}`}>{Math.floor(MP.value)}/{Math.floor(MP.value)}</span>
                                     </div>
 
                                     {HomeData.user_statuses
@@ -260,7 +263,7 @@ function Home() {
                                                     <div className={`${styles.statusFill}`} style={{ width: `${status_percent}%`}} ></div>
                                                 </div>
                                                 <div>
-                                                    <span className={`${styles.statusValue}`}>{status.value}</span>
+                                                    <span className={`${styles.statusValue}`}>{Math.floor(status.value)}</span>
                                                 </div>
                                             </div>
                                         );
