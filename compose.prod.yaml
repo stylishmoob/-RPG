@@ -1,0 +1,36 @@
+services:
+  flask:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flask-rpg
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db:5432/rpg
+      SECRET_KEY: development-secret-key
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:17
+    container_name: postgres-rpg
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: rpg
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d rpg"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
