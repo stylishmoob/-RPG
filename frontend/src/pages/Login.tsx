@@ -44,17 +44,23 @@ function Login() {
                 login()
             }}>
                 <input 
+                    aria-label="ユーザー名"
+                    name="user_name"
+                    autoComplete="username"
                     value={userName}
                     onChange={(e)=>setUserName(e.target.value)}
                     required
                 />
                 <input 
+                    aria-label="パスワード"
+                    name="password"
                     type="password"
+                    autoComplete="current-password"
                     value={password}
                     onChange={(e)=>setPassword(e.target.value)}
                     required
                 />
-                <button type="submit">
+                <button type="submit" aria-label="ログイン">
                     ログイン
                 </button>
             </form>
