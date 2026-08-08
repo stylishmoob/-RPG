@@ -104,7 +104,7 @@ function Category() {
 
                         <div className={styles.categoryAll}>
                             <div className={styles.categoryAllInner}>
-                                <table>
+                                <table aria-label="ユーザーカテゴリー一覧">
                                     <tbody>
                                         {user_categories.map((category) => (
                                             <tr key={category.id}>
@@ -135,6 +135,7 @@ function Category() {
                         <div className={styles.categoryAdd}>
                             <div className={styles.categoryAddInner}>
                                 <select
+                                    aria-label="追加するカテゴリー"
                                     className={styles.addSelect}
                                     value={selectedCategoryId}
                                     onChange={(e) =>
@@ -152,6 +153,7 @@ function Category() {
                                 </select>
 
                                 <button
+                                    aria-label="カテゴリー追加"
                                     className={styles.addButton}
                                     disabled={selectedCategoryId === ""}
                                     onClick={() =>

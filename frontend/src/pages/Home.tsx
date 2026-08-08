@@ -264,7 +264,7 @@ function Home() {
                     <div id="stopwatch" className={`${styles.card} ${styles.stopwatchCard}`}>
                         <div className={`${styles.cardInner}`}>
                             <div className={`${styles.cardContent}`}>
-                                <h4 >{formatTime(DurationSeconds)}</h4>      
+                                <h4 data-testid="stopwatch-timer">{formatTime(DurationSeconds)}</h4>
                                 <button 
                                 type="button" 
                                 className={`${styles.btn}`} 
