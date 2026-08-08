@@ -5,19 +5,6 @@ import type { HomeDataType,savedataType } from "../types/api";
 
 import styles from "../styles/home.module.css";
 
-function getProfileValueFontSize(value:string){
-    const weightedLength = [...value].reduce((length,character) => {
-        const isHalfWidth = /^[\x20-\x7E]$/.test(character);
-        return length + (isHalfWidth ? 0.6 : 1);
-    },0);
-
-    if (weightedLength === 0){
-        return 26;
-    }
-
-    return Math.max(12,Math.min(26,135 / weightedLength));
-}
-
 function Home() {
     const [HomeData,setHomeData] = useState<HomeDataType | null>(null);
 
@@ -37,6 +24,7 @@ function Home() {
     const [StartTime,setStartTime] = useState<string | null>(null);   
     const [DurationSeconds,setDurationSeconds] = useState(0);
     const [IsRunning,setIsRunning] = useState(false);
+    const [SaveMessage,setSaveMessage] = useState("");
 
     const timerIdRef = useRef<number | null>(null);
     const startTimerRef = useRef<number>(0);
@@ -119,6 +107,7 @@ function Home() {
     async function timerButton() {
         if(!IsRunning){
 
+            setSaveMessage("");
             setIsRunning(true);
             const now = Date.now();
 
@@ -153,9 +142,11 @@ function Home() {
 
                 await fetchHomeData();
 
+                setSaveMessage("保存しました");
                 console.log(result);
                 }catch(error){
                     console.error(error);
+                    setSaveMessage("保存に失敗しました");
                 }
             
 
@@ -192,12 +183,7 @@ function Home() {
                                     </div>
                                     <div className={`${styles.userName}`}>
                                         <div className={`${styles.NAME}`}>NAME</div> 
-                                        <div 
-                                            className={`${styles.NAMEValue}`}
-                                            style={{
-                                                fontSize:`${getProfileValueFontSize(HomeData.user.name)}px`,
-                                            }}
-                                        >
+                                        <div className={`${styles.NAMEValue}`}>
                                             {HomeData.user.name}
                                         </div> 
                                     </div>
@@ -287,6 +273,7 @@ function Home() {
                                 <span>{IsRunning ? "STOP" : "START"}</span>
                                 </button>     
                                 <select 
+                                aria-label="カテゴリー"
                                 className={`${styles.selectBox}`}
                                 value={CategoryId}
                                 onChange={(e) => setCategoryId(e.target.value)}
@@ -370,7 +357,14 @@ function Home() {
                         </div>
                     )}
                 </div>
-                <div id="notification" className={`${styles.notification}`}></div>     
+                <div
+                    id="notification"
+                    role="status"
+                    aria-live="polite"
+                    className={`${styles.notification}`}
+                >
+                    {SaveMessage}
+                </div>
             </div>
         </div>
     </div>

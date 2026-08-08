@@ -557,6 +557,7 @@
     margin:0 10px 0 0;
     color:var(--text-main);
     text-align:left;
+    container-type:inline-size;
 }
 
 .NAME{
@@ -567,11 +568,22 @@
 }
 
 .NAMEValue{
-    font-size:26px;
-    line-height:1.35;
-    padding:4px 0 3px;
-    white-space:nowrap;
+    min-height:40px;
+    padding:4px 0 5px;
+    overflow:visible;
+    color:var(--text-main);
+    font-size:24px;
+    line-height:1.15;
+    white-space:normal;
+    overflow-wrap:anywhere;
+    word-break:break-word;
     border-bottom:2px solid rgba(63,55,41,.3);
+}
+
+@supports (font-size:1cqi){
+    .NAMEValue{
+        font-size:clamp(16px,8cqi,24px);
+    }
 }
 
 .jobName{
